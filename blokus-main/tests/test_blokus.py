@@ -258,7 +258,7 @@ def test_some_intercardinal_neighbors() -> None:
     assert w_piece.cardinal_neighbors() == set((0, 0), (3, 2), (2, 3))
 
 def test_one_player_blokus_mini_game() -> None:
-    bk = Blokus(2, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
+    bk = Blokus(1, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
 
     z_piece = Piece(bk.shapes[ShapeKind.Z])
     z_piece.set_anchor((1, 1))
