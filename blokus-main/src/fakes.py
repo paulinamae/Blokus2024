@@ -264,6 +264,8 @@ class BlokusFake(BlokusBase):
     _start_positions: set[Point]
     _shapes_placed: dict[int, set[Piece]]
     _retired_players: set[int]
+    _pieces_left: dict[int,set[{Piece}]]
+    _shapes_left: dict[int,set[Shape]]
 
     def __init__(
         self,
@@ -304,6 +306,14 @@ class BlokusFake(BlokusBase):
         self._shapes_placed = set()
         self._retired_players = set()
 
+        self._pieces_left = {} #STILL NEED TO IMPLEMENT THIS
+
+        self._shapes_left = {}
+        all_shapes: list[Shape] = []
+        for _, shape in self.shapes.items():
+            all_shapes.append(shape)
+        for player in self._num_players:
+            self._shapes_left[player] = all_shapes
         
     #
     # PROPERTIES
@@ -413,7 +423,7 @@ class BlokusFake(BlokusBase):
         Returns a list of shape kinds that a particular
         player has not yet played.
         """
-        raise NotImplementedError
+        return [shape.kind for shape in self._shapes_left[player]]
 
     def any_wall_collisions(self, piece: Piece) -> bool:
         """
@@ -552,7 +562,10 @@ class BlokusFake(BlokusBase):
         can be computed at any time during gameplay or at the
         completion of a game.
         """
-        raise NotImplementedError
+        score: int = 0
+        for shape in self._shapes_left[player]:
+            score -= len(shape.squares)
+        return score
 
     def available_moves(self) -> set[Piece]:
         """
