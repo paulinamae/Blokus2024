@@ -107,11 +107,11 @@ class Shape:
             transformed: bool = False
         else:
             transformed = True
-            final: list[Point]= []
-            for point in all_coords:
-                row, col = o_coords
-                a, b = point
-                final.append((a - row, b - col))
+        final: list[Point]= []
+        for point in all_coords:
+            row, col = o_coords
+            a, b = point
+            final.append((a - row, b - col))
 
         return Shape(kind, o_coords, transformed, final)
 

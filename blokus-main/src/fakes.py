@@ -267,6 +267,7 @@ class BlokusFake(BlokusBase):
     _pieces_left: dict[int,set[{Piece}]]
     _shapes_left: dict[int,set[Shape]]
     _grid: Grid
+    _curr_player: int
 
     def __init__(
         self,
@@ -308,13 +309,15 @@ class BlokusFake(BlokusBase):
         self._retired_players = set()
         self._grid = [[None] * size for _ in range(size)]
 
+        self._curr_player = 1
+
         self._pieces_left = {} #STILL NEED TO IMPLEMENT THIS
 
         self._shapes_left = {}
         all_shapes: list[Shape] = []
         for _, shape in self.shapes.items():
             all_shapes.append(shape)
-        for player in self._num_players:
+        for player in range(self._num_players + 1):
             self._shapes_left[player] = all_shapes
         
     #
@@ -337,7 +340,7 @@ class BlokusFake(BlokusBase):
         See shape_definitions.py for more details.
         """
         shapes = {}
-        for kind, string in shape_definitions.items():
+        for kind, string in shape_definitions.definitions.items():
             working_shape = Shape.from_string(kind, string)
             shapes[kind] = working_shape
         return shapes
@@ -376,6 +379,8 @@ class BlokusFake(BlokusBase):
         """
         if self.game_over:
             raise ValueError("Game Over")
+        
+        return self._curr_player
 
     @property
     def retired_players(self) -> set[int]:
@@ -396,7 +401,7 @@ class BlokusFake(BlokusBase):
         of that piece. If no played piece occupies this square,
         then the Cell is None.
         """
-        raise NotImplementedError
+        return self._grid
 
     @property
     def game_over(self) -> bool:
@@ -405,7 +410,7 @@ class BlokusFake(BlokusBase):
         when every player is either retired or has played all
         their pieces.
         """
-        raise NotImplementedError
+        pass
 
     @property
     def winners(self) -> Optional[list[int]]:
@@ -540,7 +545,7 @@ class BlokusFake(BlokusBase):
         is None.
         """
         piece_shape = piece.shape
-        if piece_shape in self._shapes_placed[self.curr_player]:
+        if piece_shape in self._shapes_placed[self._curr_player]:
             raise ValueError("Piece already placed")
 
         if piece.anchor is None:
