@@ -266,6 +266,7 @@ class BlokusFake(BlokusBase):
     _retired_players: set[int]
     _pieces_left: dict[int,set[{Piece}]]
     _shapes_left: dict[int,set[Shape]]
+    _grid: Grid
 
     def __init__(
         self,
@@ -305,6 +306,7 @@ class BlokusFake(BlokusBase):
 
         self._shapes_placed = set()
         self._retired_players = set()
+        self._grid = [[None] * size for _ in range(size)]
 
         self._pieces_left = {} #STILL NEED TO IMPLEMENT THIS
 
@@ -478,8 +480,11 @@ class BlokusFake(BlokusBase):
         if self.any_wall_collisions(piece):
             return True
         
-        #getting the coordinates of a played piece
-        #getting it from the board itself instead of from the piece
+        for r, c in piece.squares():
+            if self._grid[r][c] is not None:
+                return True
+        
+        return False
 
     def legal_to_place(self, piece: Piece) -> bool:
         """
@@ -544,8 +549,11 @@ class BlokusFake(BlokusBase):
         if not self.legal_to_place(piece):
             return False
         
-        # how are players represented
-        #update player, pieces placed, etc.
+        for r, c in piece.squares():
+            self._grid[r][c] = (self.curr_player, piece.shape.kind)
+        self._curr_player = (self.curr_player % self.num_players) + 1
+        self._num_moves += 1
+        
         return True
 
     def retire(self) -> None:
