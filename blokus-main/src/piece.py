@@ -82,14 +82,38 @@ class Shape:
         Create a Shape based on its string representation
         in shape_definitions.py. See that file for details.
         """
-        # TODO
-        for character in definition:
-            if character == "O":
-                
 
-        for kind, string_repr in shape_definitions.definitions.items():
-            if definition == string_repr:
-                return Shape(kind, )
+        lines = definition.splitlines()
+        del lines[0]
+
+        o_coords = None
+        x_coord: int = -1
+        y_coord: int = -1
+        all_coords: list[Point] = list()
+        for line in lines:
+            newline = line.replace("         ","")
+            x_coord += 1
+            for char in newline:
+                y_coord += 1
+                if char == "O":
+                    o_coords: Point = (x_coord,y_coord)
+                    all_coords.append((x_coord, y_coord))
+                if char == "X":
+                    all_coords.append((x_coord, y_coord))
+            y_coord = -1
+
+        if not o_coords:
+            o_coords = (0,0)
+            transformed: bool = False
+        else:
+            transformed = True
+            final: list[Point]= []
+            for point in all_coords:
+                row, col = o_coords
+                a, b = point
+                final.append((a - row, b - col))
+
+        return Shape(kind, o_coords, transformed, final)
 
     def flip_horizontally(self) -> None:
         """
