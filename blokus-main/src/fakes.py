@@ -378,7 +378,7 @@ class BlokusFake(BlokusBase):
         this property will not return a meaningful value.
         """
         if self.game_over:
-            return None
+            return 1000
         
         return self._curr_player
 
@@ -434,7 +434,7 @@ class BlokusFake(BlokusBase):
         Returns the (one or more) players who have the highest
         score. Returns None if the game is not over.
         """
-        win: Optional[list[int]] = []
+        win: list[int] = []
         for player in range(1, self.num_players + 1):
             check_score = self.get_score(player)
             if win == []:
@@ -454,7 +454,7 @@ class BlokusFake(BlokusBase):
         Returns a list of shape kinds that a particular
         player has not yet played.
         """
-        return [shape.kind for shape in self._shapes_left[player]]
+        return [shape for shape in self._shapes_left[player]]
 
     def any_wall_collisions(self, piece: Piece) -> bool:
         """

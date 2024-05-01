@@ -84,23 +84,35 @@ class Shape:
         """
 
         lines = definition.splitlines()
-        del lines[0]
+        for line in lines:
+            if "X" not in line and "O" not in line:
+                lines.remove(line)
+
+        spaces = []
+        for line in lines:
+            count = 0
+            for char in line:
+                if char != "X" and char != "O": # is a valid preceding space
+                    count += 1
+                else:
+                    spaces.append(count)
+                    break
 
         o_coords = None
-        x_coord: int = -1
-        y_coord: int = -1
+        r_coord: int = -1
+        c_coord: int = -1
         all_coords: list[Point] = list()
         for line in lines:
-            newline = line.replace("         ","")
-            x_coord += 1
+            newline = line.replace(" " * min(spaces),"")
+            r_coord += 1
             for char in newline:
-                y_coord += 1
-                if char == "O":
-                    o_coords: Point = (x_coord,y_coord)
-                    all_coords.append((x_coord, y_coord))
+                c_coord += 1
+                if char == "O" or char == "@":
+                    o_coords = (r_coord,c_coord)
+                    all_coords.append((r_coord, c_coord))
                 if char == "X":
-                    all_coords.append((x_coord, y_coord))
-            y_coord = -1
+                    all_coords.append((r_coord, c_coord))
+            c_coord = -1
 
         if not o_coords:
             o_coords = (0,0)
@@ -112,6 +124,9 @@ class Shape:
             row, col = o_coords
             a, b = point
             final.append((a - row, b - col))
+
+        if kind == ShapeKind.V:
+            final.remove((0, 0))
 
         return Shape(kind, o_coords, transformed, final)
 
