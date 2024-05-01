@@ -49,7 +49,7 @@ def test_init_blokus_duo_2() -> None:
     assert blokus_duo.num_players == 2
     assert blokus_duo.size == 14
     assert blokus_duo.curr_player == 1
-    assert blokus_duo.start_positions == set((5, 5))
+    assert blokus_duo.start_positions == set((4, 4), (9, 9))
     assert blokus_duo.grid == [[None] * blokus_duo.size for _ in range(blokus_duo.size)]
     assert not blokus_duo.game_over
 
