@@ -228,32 +228,36 @@ def test_some_right_rotated_shapes() -> None:
     assert W_shape.squares == set((0, 0), (0, -1), (1, 0), (-1, -1), (1, 1))
 
 def test_some_cardinal_neighbors() -> None:
-    bk = Blokus(1, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
+    bk1 = Blokus(1, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
     
-    f_piece = Piece(bk.shapes[ShapeKind.F])
+    f_piece = Piece(bk1.shapes[ShapeKind.F])
     f_piece.set_anchor((1, 1))
     assert f_piece.cardinal_neighbors() == set((0, 0), (0, 3), (1, 2), (2, 0), (2, 2), (3, 1))
 
-    z_piece = Piece(bk.shapes[ShapeKind.Z])
+    bk2 = Blokus(1, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
+    z_piece = Piece(bk2.shapes[ShapeKind.Z])
     z_piece.set_anchor((1, 1))
     assert f_piece.cardinal_neighbors() == set((1, 0), (2, 0), (0, 2), (1, 2), (2, 3), (3, 1), (3, 2))
 
-    w_piece = Piece(bk.shapes[ShapeKind.W])
+    bk3 = Blokus(1, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
+    w_piece = Piece(bk3.shapes[ShapeKind.W])
     w_piece.set_anchor((1, 1))
     assert w_piece.cardinal_neighbors() == set((1, 0), (0, 1), (3, 0), (3, 1), (2, 2), (1, 3), (0, 3))
 
 def test_some_intercardinal_neighbors() -> None:
-    bk = Blokus(1, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
+    bk1 = Blokus(1, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
     
-    f_piece = Piece(bk.shapes[ShapeKind.F])
+    f_piece = Piece(bk1.shapes[ShapeKind.F])
     f_piece.set_anchor((1, 1))
     assert f_piece.cardinal_neighbors() == set((3, 0), (3, 2), (1, 3))
 
-    z_piece = Piece(bk.shapes[ShapeKind.Z])
+    bk2 = Blokus(1, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
+    z_piece = Piece(bk2.shapes[ShapeKind.Z])
     z_piece.set_anchor((1, 1))
     assert f_piece.cardinal_neighbors() == set((3, 0), (3, 3), (1, 3))
 
-    w_piece = Piece(bk.shapes[ShapeKind.W])
+    bk3 = Blokus(1, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
+    w_piece = Piece(bk3.shapes[ShapeKind.W])
     w_piece.set_anchor((1, 1))
     assert w_piece.cardinal_neighbors() == set((0, 0), (3, 2), (2, 3))
 
