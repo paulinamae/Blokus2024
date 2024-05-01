@@ -1,7 +1,6 @@
 import pytest
 from typing import Optional
 
-import shape_definitions
 from shape_definitions import ShapeKind
 from piece import Shape, Piece
 from base import BlokusBase
