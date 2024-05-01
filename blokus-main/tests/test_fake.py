@@ -7,7 +7,6 @@ from piece import Shape, Piece
 from base import BlokusBase
 from fakes import BlokusFake
 
-
 def test_inheritance() -> None:
     """Test that BlokusFake inherits from BlokusBase"""
     assert issubclass(
