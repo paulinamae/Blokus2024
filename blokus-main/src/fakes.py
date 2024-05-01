@@ -262,12 +262,12 @@ class BlokusFake(BlokusBase):
     _num_players: int
     _size: int
     _start_positions: set[Point]
-    _shapes_placed: dict[int, set[Piece]]
+    _shapes_placed: dict[int, set[ShapeKind]]
     _retired_players: set[int]
-    _pieces_left: dict[int,set[{Piece}]]
-    _shapes_left: dict[int,set[Shape]]
+    _shapes_left: dict[int,set[ShapeKind]]
     _grid: Grid
     _curr_player: int
+    _num_moves: int
 
     def __init__(
         self,
@@ -300,25 +300,25 @@ class BlokusFake(BlokusBase):
             raise ValueError("Size must be greater than 5.")
         for position in self._start_positions:
             x,y = position
-            if not (0 < x < self._size or 0 < y < self._size):
+            if not (0 <= x < self._size or 0 <= y < self._size):
                 raise ValueError("Choose valid start position.")
         if len(self._start_positions) < self._num_players:
             raise ValueError("Not enough start positions.")  
 
-        self._shapes_placed = set()
+        self._shapes_placed = {}
+        for i in range(self._num_players):
+            self._shapes_placed[i+1] = set()
+            
         self._retired_players = set()
         self._grid = [[None] * size for _ in range(size)]
 
         self._curr_player = 1
 
-        self._pieces_left = {} #STILL NEED TO IMPLEMENT THIS
+        self._num_moves = 0
 
         self._shapes_left = {}
-        all_shapes: list[Shape] = []
-        for _, shape in self.shapes.items():
-            all_shapes.append(shape)
-        for player in range(self._num_players + 1):
-            self._shapes_left[player] = all_shapes
+        for player in range(1, self._num_players + 1):
+            self._shapes_left[player] = set(self.shapes.keys())
         
     #
     # PROPERTIES
@@ -378,7 +378,7 @@ class BlokusFake(BlokusBase):
         this property will not return a meaningful value.
         """
         if self.game_over:
-            raise ValueError("Game Over")
+            return None
         
         return self._curr_player
 
@@ -410,7 +410,23 @@ class BlokusFake(BlokusBase):
         when every player is either retired or has played all
         their pieces.
         """
-        pass
+        leftovers = set()
+        players_done = []
+        players_done += list(self._retired_players)
+
+        for i in range(1,self.num_players+1):
+            if i not in self._retired_players:
+                leftovers.add(i)
+            
+        for leftover in leftovers:
+            if self._shapes_left[leftover]:
+                return False
+            else:
+                players_done.append(leftover)
+        if len(players_done) == self.num_players:
+            return True
+        
+        return False
 
     @property
     def winners(self) -> Optional[list[int]]:
@@ -418,9 +434,17 @@ class BlokusFake(BlokusBase):
         Returns the (one or more) players who have the highest
         score. Returns None if the game is not over.
         """
-        if not self.game_over:
-            return None 
-
+        win: Optional[list[int]] = []
+        for player in range(1, self.num_players + 1):
+            check_score = self.get_score(player)
+            if win == []:
+                win.append(player)
+            elif check_score > self.get_score(win[0]):
+                win.pop(0)
+                win.append(player)
+            elif check_score == self.get_score(win[0]):
+                win.append(player)
+        return win
     #
     # METHODS
     #
@@ -454,9 +478,9 @@ class BlokusFake(BlokusBase):
         if piece.anchor is None:
             raise ValueError("Anchor of the piece is None.")
 
-        for coord in piece_shape.squares:
+        for coord in piece.squares():
             x, y = coord
-            if x < 0 or y < 0 or x > self._size or y > self._size:
+            if x < 0 or y < 0 or x >= self._size or y >= self._size:
                 return True
         
         return False
@@ -511,14 +535,14 @@ class BlokusFake(BlokusBase):
         Raises ValueError if the anchor of the piece
         is None.
         """
-        piece_shape = piece.shape
-        if piece_shape in self._shapes_placed[self.curr_player]:
+        
+        if piece.shape.kind in self._shapes_placed[self.curr_player]:
             raise ValueError("Piece already placed")
 
         if piece.anchor is None:
             raise ValueError("Anchor is None.")
         
-        if self.any_collisions:
+        if self.any_collisions(piece):
             return False
 
         return True
@@ -544,8 +568,8 @@ class BlokusFake(BlokusBase):
         Raises ValueError if the anchor of the piece
         is None.
         """
-        piece_shape = piece.shape
-        if piece_shape in self._shapes_placed[self._curr_player]:
+        
+        if piece.shape.kind in self._shapes_placed[self._curr_player]:
             raise ValueError("Piece already placed")
 
         if piece.anchor is None:
@@ -556,8 +580,13 @@ class BlokusFake(BlokusBase):
         
         for r, c in piece.squares():
             self._grid[r][c] = (self.curr_player, piece.shape.kind)
-        self._curr_player = (self.curr_player % self.num_players) + 1
+        
         self._num_moves += 1
+        self._shapes_placed[self.curr_player].add(piece.shape.kind)
+        self._shapes_left[self.curr_player].remove(piece.shape.kind)
+
+        if ((self._curr_player % self.num_players) + 1) not in self._retired_players:
+            self._curr_player = (self._curr_player % self.num_players) + 1
         
         return True
 
@@ -568,6 +597,9 @@ class BlokusFake(BlokusBase):
         turns; they are skipped over during subsequent gameplay.
         """
         self._retired_players.add(self.curr_player)
+        
+        if self._num_players - len(self.retired_players) > 0:
+            self._curr_player = (self.curr_player % self.num_players) + 1
 
     def get_score(self, player: int) -> int:
         """
@@ -577,7 +609,9 @@ class BlokusFake(BlokusBase):
         """
         score: int = 0
         for shape in self._shapes_left[player]:
-            score -= len(shape.squares)
+            str = shape_definitions.definitions[shape]
+            working_shape = Shape.from_string(shape, str)
+            score -= len(working_shape.squares)
         return score
 
     def available_moves(self) -> set[Piece]:
