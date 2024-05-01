@@ -1,6 +1,6 @@
 # CMSC 14200 Course Project
 
 Team members:
-- Evelyn Wang (egwang)
-- Vivian Chang (vchang5)
-- Paulina DePaulo (pdepaulo)
+- QA: Evelyn Wang (egwang)
+- Bot: Vivian Chang (vchang5)
+- GUI: Paulina DePaulo (pdepaulo)
