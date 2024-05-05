@@ -1,91 +1,100 @@
 import sys,random
 from base import Cell, BlokusBase
-from fakes import BlokusStub
+from fakes import BlokusFake
 from piece import Point, Piece, Shape
+
+# Classes that represent players with different strategies
+
+class Player:
+
+    def __init__(self, bot_game: BlokusFake, player: int):
+        self._bot_game = bot_game
+        self._player = player
+
+    @ property
+    def retired(self) -> bool:
+        """
+        Check if player has retired from the game.
+        """
+        if self._player in self._bot_game._retired_players:
+            return True
+        return False
+    
+    def strategy(self)-> Piece:
+        """
+        Choose a piece to place based on a given strategy.
+        """
+        raise NotImplementedError
+
+    def make_move(self) -> None:
+        """
+        Make a move using a piece that was determined by a specific strategy.
+        """
+        if not self.retired:
+            avail_moves: set[Piece] = self._bot_game.available_moves()
+            if avail_moves == set():
+                self._bot_game.retire()
+            else:
+                move: Piece = self.strategy()
+                self._bot_game.maybe_place(move)
+
+class NBot(Player):
+
+    def __init__(self, bot_game: BlokusFake, player: int):
+        super().__init__(bot_game, player)
+
+    def strategy(self) -> Piece:
+        avail_moves: set[Piece] = self._bot_game.available_moves()
+        return random.choice(list(avail_moves))
+    
+
+class SBot(Player):
+
+    def __init__(self, bot_game: BlokusFake, player: int):
+        super().__init__(bot_game, player)
+    
+    def strategy(self) -> Piece:
+        return self.biggest_piece()
+
+    def biggest_piece(self) -> Piece:
+        """
+        Find a piece with the largest size out of the available pieces.
+        """
+
+        shape_sizes: dict[int,Piece] = {}
+        for piece in self._bot_game.available_moves():
+            shape_sizes[len(piece.shape.squares)] = piece
+        max_size: int = max(shape_sizes)
+        return shape_sizes[max_size]
+
+# Simulate games
 
 num_games: int = int(sys.argv[1])
 
-# pass in either n_bot or s_bot as a parameter to make_move in order to keep 
-# drawing pieces
-
-def make_move(bot_game: BlokusStub, avail_moves: set[Piece], move: Piece) -> None:
-    """
-    Make a move using a piece that was determined by either the n_bot or s_bot
-    strategy.
-    """
-    avail_moves.remove(move)
-    bot_game.maybe_place(move)
-    while not bot_game.maybe_place(move) and avail_moves != set():
-        move: Piece = random.choice(list(avail_moves)) 
-        avail_moves.remove(move)
-        bot_game.maybe_place(move)
-
-def n_bot(bot_game: BlokusStub) -> Piece:
-    """
-    Make a move using the "needs-improvement" bot strategy of selecting from all
-    available moves.
-    """
-    if bot_game.available_moves() == set():
-        bot_game.retire()
-    avail_moves: set[Piece] = bot_game.available_moves()
-    move: Piece = random.choice(list(avail_moves)) 
-    avail_moves.remove(move)
-    bot_game.maybe_place(move)
-    while not bot_game.maybe_place(move) and avail_moves != set():
-        move: Piece = random.choice(list(avail_moves)) 
-        avail_moves.remove(move)
-        bot_game.maybe_place(move)
-
-def s_bot(bot_game: BlokusStub) -> None:
-    """
-    Make a move using the "satisfactory" bot strategy of selecting from all
-    available moves.
-    """
-    if bot_game.available_moves() == set():
-        bot_game.retire()
-    avail_moves: set[Piece] = bot_game.available_moves()
-    move: Piece = random.choice(list(avail_moves)) 
-    avail_moves.remove(move)
-    bot_game.maybe_place(move)
-    while not bot_game.maybe_place(move) and avail_moves != set():
-        move: Piece = random.choice(list(avail_moves)) 
-        avail_moves.remove(move)
-        bot_game.maybe_place(move)
-
-def calc_shape_sizes(bot_game: BlokusStub) -> dict[int,Shape]:
-    """
-    Create a dictionary where the key is the size of the shape (in squares) and
-    the value is the Shape that it corresponds to.
-    Inputs:
-        bot_game[BlokusStub]
-    Returns [dict[int,Shape]]
-    """
-
-    shape_sizes: dict[int,Shape] = {}
-    for _, shape in bot_game.shapes.items():
-        shape_sizes[len(shape.squares)] = shape
-    return shape_sizes
-
+one_wins: int = 0
+two_wins: int = 0
+ties: int = 0
 
 for i in range(num_games):
 
-    one_wins: int = 0
-    two_wins: int = 0
-    ties: int = 0
+    start_positions = set([(0,0),(10,10)])
 
-    bot_game: BlokusStub = BlokusStub(2, 11, set())
+    bot_game: BlokusFake = BlokusFake(2, 11, start_positions)
 
+    bot1: NBot = NBot(bot_game, 1)
+    bot2: SBot = SBot(bot_game,2)
 
+    while not bot_game.game_over:
+        bot1.make_move()
+        bot2.make_move()
         
-    win_square: Cell = bot_game.grid[0][13]
-    if win_square is not None:
-        player,shape = win_square
-        if player == 1:
-            one_wins += 1
-        else:
-            two_wins += 1
-    else:
+    game_winners = bot_game.winners
+    if len(bot_game.winners) > 1:
         ties += 1
+    elif bot_game.winners[0] == 1:
+        one_wins += 1
+    else:
+        two_wins += 1
 
 print(f"Bot 1 Wins |  {one_wins/num_games*100:.2f} %")
 print(f"Bot 2 Wins |  {two_wins/num_games*100:.2f} %")
