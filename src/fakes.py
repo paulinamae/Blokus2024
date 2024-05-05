@@ -625,4 +625,14 @@ class BlokusFake(BlokusBase):
         to a single Shape that are considered available moves
         (because they may differ in location and orientation).
         """
-        raise NotImplementedError
+        avail_moves: set[Piece] = set()
+        
+        for shapekind in self._shapes_left[self._curr_player]:
+            for x in range(self._size):
+                for y in range(self._size):
+                    maybe_piece: Piece = Piece(self.shapes[shapekind])
+                    maybe_piece.set_anchor((x,y))
+                    if self.legal_to_place(maybe_piece):
+                        avail_moves.add(maybe_piece)
+
+        return avail_moves
