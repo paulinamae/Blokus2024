@@ -20,7 +20,7 @@ class Player:
             return True
         return False
     
-    def strategy(self)-> Piece:
+    def strategy(self, avail_moves: set[Piece])-> Piece:
         """
         Choose a piece to place based on a given strategy.
         """
@@ -35,7 +35,7 @@ class Player:
             if avail_moves == set():
                 self._bot_game.retire()
             else:
-                move: Piece = self.strategy()
+                move: Piece = self.strategy(avail_moves)
                 self._bot_game.maybe_place(move)
 
 class NBot(Player):
@@ -43,9 +43,10 @@ class NBot(Player):
     def __init__(self, bot_game: BlokusFake, player: int):
         super().__init__(bot_game, player)
 
-    def strategy(self) -> Piece:
-        avail_moves: set[Piece] = self._bot_game.available_moves()
-        return random.choice(list(avail_moves))
+    def strategy(self, avail_moves: set[Piece]) -> Piece:
+        rand: Piece = random.choice(list(avail_moves))
+        #print("N:",rand.shape.kind)
+        return rand
     
 
 class SBot(Player):
@@ -53,18 +54,19 @@ class SBot(Player):
     def __init__(self, bot_game: BlokusFake, player: int):
         super().__init__(bot_game, player)
     
-    def strategy(self) -> Piece:
-        return self.biggest_piece()
+    def strategy(self, avail_moves: set[Piece]) -> Piece:
+        return self.biggest_piece(avail_moves)
 
-    def biggest_piece(self) -> Piece:
+    def biggest_piece(self, avail_moves: set[Piece]) -> Piece:
         """
         Find a piece with the largest size out of the available pieces.
         """
 
         shape_sizes: dict[int,Piece] = {}
-        for piece in self._bot_game.available_moves():
+        for piece in avail_moves:
             shape_sizes[len(piece.shape.squares)] = piece
         max_size: int = max(shape_sizes)
+        #print("S:",shape_sizes[max_size].shape.kind)
         return shape_sizes[max_size]
 
 # Simulate games
@@ -77,7 +79,7 @@ ties: int = 0
 
 for i in range(num_games):
 
-    start_positions = set([(0,0),(10,10)])
+    start_positions: set[Point] = set([(0,0),(10,10)])
 
     bot_game: BlokusFake = BlokusFake(2, 11, start_positions)
 
@@ -85,16 +87,22 @@ for i in range(num_games):
     bot2: SBot = SBot(bot_game,2)
 
     while not bot_game.game_over:
+        #print("first:", bot_game._curr_player)
+        bot2.make_move()
+        #print("Bot 1:", bot_game._shapes_placed[1])
+        #print("second:",bot_game._curr_player)
         bot1.make_move()
-        bot2.make_move()       
-        
-    game_winners = bot_game.winners
-    if len(bot_game.winners) > 1:
-        ties += 1
-    elif bot_game.winners[0] == 1:
-        one_wins += 1
-    else:
-        two_wins += 1
+        #print("Bot 2:", bot_game._shapes_placed[2])
+               
+    print("N-bot:",bot_game.get_score(1))
+    print("S-bot:",bot_game.get_score(2))
+    if bot_game.winners is not None:
+        if len(bot_game.winners) > 1:
+            ties += 1
+        elif bot_game.winners[0] == 1:
+            one_wins += 1
+        else:
+            two_wins += 1
 
 print(f"Bot 1 Wins |  {one_wins/num_games*100:.2f} %")
 print(f"Bot 2 Wins |  {two_wins/num_games*100:.2f} %")
