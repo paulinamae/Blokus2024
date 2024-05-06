@@ -86,7 +86,7 @@ for i in range(num_games):
 
     while not bot_game.game_over:
         bot1.make_move()
-        bot2.make_move()
+        bot2.make_move()       
         
     game_winners = bot_game.winners
     if len(bot_game.winners) > 1:

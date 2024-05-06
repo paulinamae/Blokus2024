@@ -300,7 +300,7 @@ class BlokusFake(BlokusBase):
             raise ValueError("Size must be greater than 5.")
         for position in self._start_positions:
             x,y = position
-            if not (0 <= x < self._size or 0 <= y < self._size):
+            if not (0 <= x <= self._size or 0 <= y <= self._size):
                 raise ValueError("Choose valid start position.")
         if len(self._start_positions) < self._num_players:
             raise ValueError("Not enough start positions.")  
