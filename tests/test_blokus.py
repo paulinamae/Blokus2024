@@ -325,6 +325,36 @@ def test_two_player_blokus_mini_game() -> None:
     assert bk.get_score(1) == -85
     assert bk.get_score(2) == -84
     
+def test_exception_init() -> None:
+    with pytest.raises(ValueError):
+        bk = Blokus(0, 5, {(0, 0)})
+    with pytest.raises(ValueError):
+        bk = Blokus(5, 5, {(0, 0), (1, 1), (2, 2), (3, 3), (4, 4)})
+    with pytest.raises(ValueError):
+        bk = Blokus(1, 4, {(0, 0)})
+    with pytest.raises(ValueError):
+        bk = Blokus(1, 5, {(6, 6)})
+    with pytest.raises(ValueError):
+        bk = Blokus(2, 5, {(0, 0)})
 
+def test_exception_place_already_played() -> None:
+    bk = Blokus(1, 5, {(0, 0)})
+    one_piece = Piece(bk.shapes[ShapeKind.ONE])
+    one_piece.set_anchor((0, 0))
+    assert bk.maybe_place(one_piece)
 
+    another_one_piece = Piece(bk.shapes[ShapeKind.ONE])
+    another_one_piece.set_anchor((4, 4))
+    with pytest.raises(ValueError):
+        bk.maybe_place(another_one_piece)
     
+def test_exception_place_without_anchor() -> None:
+    bk = Blokus(1, 5, {(0, 0)})
+    one_piece = Piece(bk.shapes[ShapeKind.ONE])
+
+    with pytest.raises(ValueError):
+        bk.maybe_place(one_piece)
+
+def test_start_positions_1()
+
+
