@@ -136,24 +136,37 @@ class Shape:
         (across the vertical axis through its origin),
         by modifying the squares in place.
         """
-        # TODO
-        raise NotImplementedError
+        for square in self.squares:
+            row, col = square 
+            new_square = (row, -col)
+            self.squares.remove(square)
+            self.squares.append(new_square)
 
     def rotate_left(self) -> None:
         """
         Rotate the shape left by 90 degrees,
         by modifying the squares in place.
         """
-        # TODO
-        raise NotImplementedError
+        new_squares: list[Point] = []
+        for square in self.squares:
+            x,y = square
+            new_square: Point = (-y,x)
+            new_squares.append(new_square)
+
+        self.squares = new_squares
 
     def rotate_right(self) -> None:
         """
         Rotate the shape right by 90 degrees,
         by modifying the squares in place.
         """
-        # TODO
-        raise NotImplementedError
+        new_squares: list[Point] = []
+        for square in self.squares:
+            x,y = square
+            new_square: Point = (y,-x)
+            new_squares.append(new_square)
+            
+        self.squares = new_squares
 
 
 class Piece:
@@ -251,7 +264,7 @@ class Piece:
             for r, c in self.shape.squares
         ]
 
-    def cardinal_neighbors(self) -> set[Point]:
+    def cardinal_neighbors(self, board_size: int) -> set[Point]:
         """
         Returns the combined cardinal neighbors
         (north, south, east, and west)
@@ -259,10 +272,35 @@ class Piece:
 
         Raises ValueError if anchor is not set.
         """
-        # TODO
-        raise NotImplementedError
+        if not self.anchor:
+            raise ValueError("Anchor point not set")
+        
+        result: set[Point] = set()
 
-    def intercardinal_neighbors(self) -> set[Point]:
+        for r, c in self.squares():
+            if not (r - 1 < 0):
+                north_neighbor: Point = (r - 1, c)
+                if north_neighbor not in self.squares():
+                    result.add(north_neighbor)
+            
+            if not (r + 1 >= board_size):
+                south_neighbor: Point = (r + 1, c)
+                if south_neighbor not in self.squares():
+                    result.add(south_neighbor)
+            
+            if not (c + 1 >= board_size):
+                east_neighbor: Point = (r, c + 1)
+                if east_neighbor not in self.squares():
+                    result.add(east_neighbor)
+            
+            if not (c - 1 < 0):
+                west_neighbor: Point = (r, c - 1)
+                if west_neighbor not in self.squares():
+                    result.add(west_neighbor)
+        
+        return result
+
+    def intercardinal_neighbors(self, board_size: int) -> set[Point]:
         """
         Returns the combined intercardinal neighbors
         (northeast, southeast, southwest, and northwest)
@@ -270,5 +308,30 @@ class Piece:
 
         Raises ValueError if anchor is not set.
         """
-        # TODO
-        raise NotImplementedError
+        if not self.anchor:
+            raise ValueError("Anchor point not set")
+            
+        result: set[Point] = set()
+
+        for r, c in self.squares():
+            if not (r - 1 < 0) and not (c + 1 >= board_size):
+                northeast_neighbor: Point = (r - 1, c + 1)
+                if northeast_neighbor not in self.squares():
+                    result.add(northeast_neighbor)
+            
+            if not (r + 1 >= board_size) and not (c + 1 >= board_size):
+                southeast_neighbor: Point = (r + 1, c + 1)
+                if southeast_neighbor not in self.squares():
+                    result.add(southeast_neighbor)
+            
+            if not (r - 1 < 0) and not (c - 1 < 0):
+                northwest_neighbor: Point = (r - 1, c - 1)
+                if northwest_neighbor not in self.squares():
+                    result.add(northwest_neighbor)
+            
+            if not (r + 1 >= board_size) and not (c - 1 < 0):
+                southwest_neighbor: Point = (r - 1, c + 1)
+                if southwest_neighbor not in self.squares():
+                    result.add(southwest_neighbor)
+        
+        return result

@@ -1,16 +1,26 @@
+from typing import Optional
 from shape_definitions import ShapeKind
 from piece import Point, Shape, Piece
 from base import BlokusBase, Grid
-from typing import Optional
+
+import shape_definitions
+import piece
 
 class Blokus(BlokusBase):
     """
-    Abstract base class for Blokus game logic.
+    Blokus class for Blokus game logic.
     """
 
     _num_players: int
     _size: int
     _start_positions: set[Point]
+    _shapes_placed: dict[int, set[ShapeKind]]
+    _retired_players: set[int]
+    _shapes_left: dict[int,set[ShapeKind]]
+    _grid: Grid
+    _curr_player: int
+    _num_moves: int
+    _last_moves: dict[int, ShapeKind]
 
     def __init__(
         self,
@@ -19,8 +29,7 @@ class Blokus(BlokusBase):
         start_positions: set[Point],
     ) -> None:
         """
-        Subclasses should have constructors which accept these
-        same first three arguments:
+        Arguments:
 
             num_players: Number of players
             size: Number of squares on each side of the board
@@ -31,17 +40,37 @@ class Blokus(BlokusBase):
             if the size is less than 5,
             if not all start_positions are on the board, or
             if there are fewer start_positions than num_players.
-
-        Note: This base class constructor does not raise the
-        exceptions above, but subclass constructors should.
         """
-        self._num_players = num_players
-        self._size = size
-        self._start_positions = start_positions
 
-    #
-    # PROPERTIES
-    #
+        super().__init__(num_players,size,start_positions)
+        if self._num_players not in range(1,5):
+            raise ValueError("Must have one or two players.")
+        if self._size < 5:
+            raise ValueError("Size must be greater than 5.")
+        for position in self._start_positions:
+            x,y = position
+            if not (0 <= x <= self._size or 0 <= y <= self._size):
+                raise ValueError("Choose valid start position.")
+        if len(self._start_positions) < self._num_players:
+            raise ValueError("Not enough start positions.")  
+
+        self._shapes_placed = {}
+        for i in range(self._num_players):
+            self._shapes_placed[i+1] = set()
+            
+        self._retired_players = set()
+        self._grid = [[None] * size for _ in range(size)]
+
+        self._curr_player = 1
+
+        self._num_moves = 0
+
+        self._shapes_left = {}
+        self._last_moves = {}
+        for player in range(1, self._num_players + 1):
+            self._shapes_left[player] = set(self.shapes.keys())
+            self._last_moves[player] = None
+            
 
     @property
     def shapes(self) -> dict[ShapeKind, Shape]:
@@ -58,21 +87,25 @@ class Blokus(BlokusBase):
 
         See shape_definitions.py for more details.
         """
-        raise NotImplementedError
+        shapes = {}
+        for kind, string in shape_definitions.definitions.items():
+            working_shape = Shape.from_string(kind, string)
+            shapes[kind] = working_shape
+        return shapes
 
     @property
     def size(self) -> int:
         """
         Returns the board size (the number of squares per side).
         """
-        raise NotImplementedError
-
+        return self._size
+    
     @property
     def start_positions(self) -> set[Point]:
         """
         Returns the start positions.
         """
-        raise NotImplementedError
+        return self._start_positions
 
     @property
     def num_players(self) -> int:
@@ -80,7 +113,7 @@ class Blokus(BlokusBase):
         Returns the number of players. Players are numbered
         consecutively, starting from 1.
         """
-        raise NotImplementedError
+        return self._num_players
 
     @property
     def curr_player(self) -> int:
@@ -92,7 +125,10 @@ class Blokus(BlokusBase):
         before playing all of their pieces. If the game is over,
         this property will not return a meaningful value.
         """
-        raise NotImplementedError
+        if self.game_over:
+            return 0
+        
+        return self._curr_player
 
     @property
     def retired_players(self) -> set[int]:
@@ -101,7 +137,7 @@ class Blokus(BlokusBase):
         players do not get any more turns; they are skipped
         over during subsequent gameplay.
         """
-        raise NotImplementedError
+        return self._retired_players
 
     @property
     def grid(self) -> Grid:
@@ -113,7 +149,7 @@ class Blokus(BlokusBase):
         of that piece. If no played piece occupies this square,
         then the Cell is None.
         """
-        raise NotImplementedError
+        return self._grid
 
     @property
     def game_over(self) -> bool:
@@ -122,7 +158,23 @@ class Blokus(BlokusBase):
         when every player is either retired or has played all
         their pieces.
         """
-        raise NotImplementedError
+        leftovers = set()
+        players_done: list[int] = []
+        players_done += list(self._retired_players)
+
+        for i in range(1,self.num_players+1):
+            if i not in self._retired_players:
+                leftovers.add(i)
+            
+        for leftover in leftovers:
+            if self._shapes_left[leftover]:
+                return False
+            else:
+                players_done.append(leftover)
+        if len(players_done) == self.num_players:
+            return True
+        
+        return False
 
     @property
     def winners(self) -> Optional[list[int]]:
@@ -130,8 +182,17 @@ class Blokus(BlokusBase):
         Returns the (one or more) players who have the highest
         score. Returns None if the game is not over.
         """
-        raise NotImplementedError
-
+        win: list[int] = []
+        for player in range(1, self.num_players + 1):
+            check_score = self.get_score(player)
+            if win == []:
+                win.append(player)
+            elif check_score > self.get_score(win[0]):
+                win.pop(0)
+                win.append(player)
+            elif check_score == self.get_score(win[0]):
+                win.append(player)
+        return win
     #
     # METHODS
     #
@@ -141,7 +202,7 @@ class Blokus(BlokusBase):
         Returns a list of shape kinds that a particular
         player has not yet played.
         """
-        raise NotImplementedError
+        return self._shapes_left[player]
 
     def any_wall_collisions(self, piece: Piece) -> bool:
         """
@@ -156,9 +217,21 @@ class Blokus(BlokusBase):
         played a piece with this shape.
 
         Raises ValueError if the anchor of the piece
-        is None or not a valid position on the board.
+        is None.
         """
-        raise NotImplementedError
+        piece_shape: Shape = piece.shape
+        if piece_shape in self._shapes_placed[self.curr_player]:
+            raise ValueError("Piece already placed")
+
+        if piece.anchor is None:
+            raise ValueError("Anchor of the piece is None.")
+
+        for coord in piece.squares():
+            x, y = coord
+            if x < 0 or y < 0 or x >= self._size or y >= self._size:
+                return True
+        
+        return False
 
     def any_collisions(self, piece: Piece) -> bool:
         """
@@ -172,9 +245,23 @@ class Blokus(BlokusBase):
         played a piece with this shape.
 
         Raises ValueError if the anchor of the piece
-        is None or not a valid position on the board.
+        is None.
         """
-        raise NotImplementedError
+        piece_shape: Shape = piece.shape
+        if piece_shape in self._shapes_placed[self.curr_player]:
+            raise ValueError("Piece already placed")
+
+        if piece.anchor is None:
+            raise ValueError("Anchor of the piece is None") 
+
+        if self.any_wall_collisions(piece):
+            return True
+        
+        for r, c in piece.squares():
+            if self._grid[r][c] is not None:
+                return True
+        
+        return False
 
     def legal_to_place(self, piece: Piece) -> bool:
         """
@@ -192,7 +279,43 @@ class Blokus(BlokusBase):
 
         Raises ValueError if the player has already
         played a piece with this shape.
+
+        Raises ValueError if the anchor of the piece
+        is None.
         """
+        
+        if piece.shape.kind in self._shapes_placed[self.curr_player]:
+            raise ValueError("Piece already placed")
+
+        if piece.anchor is None:
+            raise ValueError("Anchor is None.")
+        
+        if self.any_collisions(piece):
+            return False
+        
+        if self._shapes_placed[self._curr_player] == set(): # checks start pos
+            in_start: bool = False
+            for square in piece.squares:
+                if square in self.start_positions:
+                    in_start = True
+                    break
+            if not in_start:
+                return False        
+
+        piece_cardinals: set[Point] = piece.cardinal_neighbors()
+        piece_intercardinals: set[Point] = piece.intercardinal_neighbors()
+
+        for point in piece_cardinals: # piece can't have adjacent edge with piece u alr played
+            r, c = point
+            if self._grid[r][c][0] == self.curr_player:
+                return False
+        
+        for point in piece_intercardinals: # piece has to share corner with previously placed piece
+            r, c = point
+            if self._grid[r][c][0] == self.curr_player:
+                return True
+    
+        return False
 
     def maybe_place(self, piece: Piece) -> bool:
         """
@@ -211,8 +334,35 @@ class Blokus(BlokusBase):
 
         Raises ValueError if the player has already
         played a piece with this shape.
+
+        Raises ValueError if the anchor of the piece
+        is None.
         """
-        raise NotImplementedError
+        
+        if piece.shape.kind in self._shapes_placed[self._curr_player]:
+            raise ValueError("Piece already placed")
+
+        if piece.anchor is None:
+            raise ValueError("Anchor is None.")
+
+        if not self.legal_to_place(piece):
+            return False
+        
+        for r, c in piece.squares():
+            self._grid[r][c] = (self.curr_player, piece.shape.kind)
+        
+        # Update current player status and board
+        self._num_moves += 1
+        self._shapes_placed[self.curr_player].add(piece.shape.kind)
+        self._shapes_left[self.curr_player].remove(piece.shape.kind)
+        if not self._shapes_left[self.curr_player]:
+            self._last_moves[self.curr_player] = piece.shape.kind
+
+        # Move to next player
+        if ((self._curr_player % self.num_players) + 1) not in self._retired_players:
+            self._curr_player = (self._curr_player % self.num_players) + 1
+        
+        return True
 
     def retire(self) -> None:
         """
@@ -220,7 +370,10 @@ class Blokus(BlokusBase):
         may choose to retire. This player does not get any more
         turns; they are skipped over during subsequent gameplay.
         """
-        raise NotImplementedError
+        self._retired_players.add(self.curr_player)
+        
+        if self._num_players - len(self.retired_players) > 0:
+            self._curr_player = (self.curr_player % self.num_players) + 1
 
     def get_score(self, player: int) -> int:
         """
@@ -228,7 +381,18 @@ class Blokus(BlokusBase):
         can be computed at any time during gameplay or at the
         completion of a game.
         """
-        raise NotImplementedError
+        score: int = 0
+        for shape in self._shapes_left[player]:
+            str = shape_definitions.definitions[shape]
+            working_shape = Shape.from_string(shape, str)
+            score -= len(working_shape.squares)
+        
+        if not self._shapes_left[player]:
+            score += 15
+            if self._last_moves[player] == ShapeKind.ONE:
+                score += 20
+
+        return score
 
     def available_moves(self) -> set[Piece]:
         """
@@ -241,4 +405,20 @@ class Blokus(BlokusBase):
         to a single Shape that are considered available moves
         (because they may differ in location and orientation).
         """
-        raise NotImplementedError
+        avail_moves: set[Piece] = set()
+        
+        for shapekind in self._shapes_left[self._curr_player]:
+            for x in range(self._size):
+                for y in range(self._size):
+                    maybe_pieces: set[Piece] = set()
+                    maybe_pieces.add(Piece(self.shapes[shapekind]))
+                    maybe_pieces.add(Piece(self.shapes[shapekind]).flip_horizontally())
+                    maybe_pieces.add(Piece(self.shapes[shapekind]).rotate_left())
+                    maybe_pieces.add(Piece(self.shapes[shapekind]).rotate_right)
+
+                    for maybe_piece in maybe_pieces:
+                        maybe_piece.set_anchor((x, y))
+                        if self.legal_to_place(maybe_piece):
+                            avail_moves.add(maybe_piece)
+
+        return avail_moves

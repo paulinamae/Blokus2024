@@ -83,7 +83,8 @@ definitions: dict[ShapeKind, str] = {
     # 4-square pieces
     #
     ShapeKind.FOUR: """
-         XOXX
+         XOXX (0, -1), (0, 0), (0, 1), (0, 2)
+        XXOX (0, -2), (0, -1), (0, 0), (0, 1)
          """,
     ShapeKind.SEVEN: """
          XX

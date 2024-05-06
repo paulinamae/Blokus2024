@@ -355,6 +355,7 @@ def test_exception_place_without_anchor() -> None:
     with pytest.raises(ValueError):
         bk.maybe_place(one_piece)
 
-def test_start_positions_1()
+def test_start_positions_1() -> None:
+    pass 
 
 
