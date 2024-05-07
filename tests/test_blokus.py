@@ -14,7 +14,7 @@ def test_inheritance() -> None:
     ), "Blokus should inherit from BlokusBase"
 
 def test_init_blokus_mini_1() -> None:
-    blokus_mini = Blokus(1, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
+    blokus_mini = Blokus(1, 5, set((0,0), (0, 4), (4,0), (4, 4), (2, 2)))
     
     assert blokus_mini.num_players == 1
     assert blokus_mini.size == 5
@@ -296,9 +296,9 @@ def test_two_player_blokus_mini_game() -> None:
     assert not bk.game_over
 
     c2_piece = Piece(bk.shapes[ShapeKind.C])
-    c2_piece.rotate_right()
-    c2_piece.rotate_right()
     c2_piece.set_anchor((4, 4))
+    c2_piece.rotate_right()
+    c2_piece.rotate_right()
 
     assert bk.maybe_place(c2_piece)
     assert bk.curr_player == 1
@@ -311,8 +311,8 @@ def test_two_player_blokus_mini_game() -> None:
     assert not bk.game_over
 
     two_piece = Piece(bk.shapes[ShapeKind.TWO])
-    two_piece.rotate_left()
     two_piece.set_anchor((2, 3))
+    two_piece.rotate_left()
     assert bk.maybe_place(two_piece)
     assert bk.curr_player == 1
 
@@ -356,6 +356,342 @@ def test_exception_place_without_anchor() -> None:
         bk.maybe_place(one_piece)
 
 def test_start_positions_1() -> None:
-    pass 
+    bk = Blokus(1, 5, {(0, 0)})
+    one_piece = Piece(bk.shapes[ShapeKind.ONE])
+    one_piece.set_anchor((1, 1))
+    assert not bk.maybe_place(one_piece)
+
+    two_piece = Piece(bk.shapes[ShapeKind.TWO])
+    two_piece.set_anchor((0, 0))
+    assert bk.maybe_place(two_piece)
+
+    three_piece = Piece(bk.shapes[ShapeKind.THREE])
+    three_piece.set_anchor((1, 3))
+    assert bk.maybe_place(three_piece)
+
+def test_start_positions_2() -> None:
+    bk = Blokus(2, 10, {(0,0), (9, 9)})
+    seven_piece = Piece(bk.shapes[ShapeKind.SEVEN])
+    seven_piece.set_anchor((2, 2))
+    assert not bk.maybe_place(seven_piece)
+
+    seven_piece.set_anchor((1, 1))
+    assert bk.maybe_place(seven_piece)
+
+    a_piece = Piece(bk.shapes[ShapeKind.L])
+    a_piece.set_anchor((7, 7))
+    assert not bk.maybe_place(a_piece)
+    a_piece.set_anchor((2, 0))
+    assert not bk.maybe_place(a_piece)
+    a_piece.set_anchor((9, 8))
+    assert bk.maybe_place(a_piece)
+
+    o_piece = Piece(bk.shapes[ShapeKind.LETTER_O])
+    o_piece.set_anchor((3, 2))
+    assert bk.maybe_place(o_piece)
+
+    s_piece = Piece(bk.shapes[ShapeKind.S])
+    s_piece.set_anchor((5, 6))
+    assert bk.maybe_place(s_piece)
+
+def test_start_positions_3() -> None:
+    bk = Blokus(2, 10, {(0,0), (9, 9), (0, 9), (9, 0)})
+    seven_piece = Piece(bk.shapes[ShapeKind.SEVEN])
+    seven_piece.set_anchor((2, 2))
+    assert not bk.maybe_place(seven_piece)
+
+    seven_piece.set_anchor((1, 1))
+    assert bk.maybe_place(seven_piece)
+
+    a_piece = Piece(bk.shapes[ShapeKind.L])
+    a_piece.set_anchor((7, 7))
+    assert not bk.maybe_place(a_piece)
+    a_piece.set_anchor((2, 0))
+    assert not bk.maybe_place(a_piece)
+    a_piece.set_anchor((9, 8))
+    assert bk.maybe_place(a_piece)
+
+    o_piece = Piece(bk.shapes[ShapeKind.LETTER_O])
+    o_piece.set_anchor((3, 2))
+    assert bk.maybe_place(o_piece)
+
+    s_piece = Piece(bk.shapes[ShapeKind.S])
+    s_piece.set_anchor((5, 6))
+    assert bk.maybe_place(s_piece)
+
+def test_place_flipped_shape_1() -> None:
+    bk = Blokus(1, 5, {(0, 0)})
+    s_piece = Piece(bk.shapes[ShapeKind.S])
+    s_piece.set_anchor((0, 1))
+    s_piece.flip_horizontally()
+    assert s_piece.squares() == {(0, 0), (0, 1), (1, 1), (1, 2)}
+    assert bk.maybe_place(s_piece)
+
+    for square in s_piece.squares():
+        r, c = square
+        assert bk.grid[r][c][0] == bk.curr_player and bk.grid[r][c][1] == ShapeKind.S
+
+def test_rotated_shape_1() -> None:
+    bk = Blokus(1, 5, {(0, 0)})
+    a_piece = Piece(bk.shapes[ShapeKind.A])
+    a_piece.set_anchor((1, 0))
+    a_piece.rotate_right()
+    assert a_piece.squares() == {(0, 0), (1, 0), (1, 1), (2, 0)}
+    assert bk.maybe_place(a_piece)
+
+    for square in a_piece.squares():
+        r, c = square
+        assert bk.grid[r][c][0] == bk.curr_player and bk.grid[r][c][1] == ShapeKind.A
+
+def test_rotated_shape_2() -> None:
+    bk = Blokus(1, 5, {(0, 0)})
+    a_piece = Piece(bk.shapes[ShapeKind.A])
+    a_piece.set_anchor((0, 1))
+    a_piece.rotate_right()
+    a_piece.rotate_right()
+    assert a_piece.squares() == {(0, 0), (0, 1), (0, 2), (1, 1)}
+    assert bk.maybe_place(a_piece)
+
+    for square in a_piece.squares():
+        r, c = square
+        assert bk.grid[r][c][0] == bk.curr_player and bk.grid[r][c][1] == ShapeKind.A
+
+def test_flipped_and_rotated_shape_1() -> None:
+    bk = Blokus(1, 5, {(1, 0)})
+    s_piece = Piece(bk.shapes[ShapeKind.A])
+    s_piece.set_anchor((1, 0))
+    s_piece.flip_horizontally()
+    s_piece.rotate_right()
+    s_piece.rotate_right()
+    s_piece.rotate_right()
+    assert s_piece.squares() == {(1, 0), (2, 0), (0, 1), (1, 1)}
+    assert bk.maybe_place(s_piece)
+
+    for square in s_piece.squares():
+        r, c = square
+        assert bk.grid[r][c][0] == bk.curr_player and bk.grid[r][c][1] == ShapeKind.S
+
+def test_flipped_and_rotated_shape_2() -> None:
+    bk = Blokus(1, 5, {(1, 1)})
+    f_piece = Piece(bk.shapes[ShapeKind.F])
+    f_piece.set_anchor((1, 1))
+    f_piece.flip_horizontally()
+    f_piece.flip_horizontally()
+    f_piece.rotate_right()
+    f_piece.rotate_right()
+    f_piece.rotate_right()
+    f_piece.rotate_right()
+    assert f_piece.squares() == {(1, 1), (1, 0), (2, 1), (0, 1), (0, 2)}
+    assert bk.maybe_place(f_piece)
+
+    for square in f_piece.squares():
+        r, c = square
+        assert bk.grid[r][c][0] == bk.curr_player and bk.grid[r][c][1] == ShapeKind.F
+
+def test_prevent_own_edges_1() -> None:
+    bk = Blokus(1, 5, {(0, 0)})
+    l_piece = Piece(bk.shapes[ShapeKind.L])
+    l_piece.set_anchor((2, 0))
+    assert bk.maybe_place(l_piece)
+
+    three_piece = Piece(bk.shapes[ShapeKind.THREE])
+    three_piece.set_anchor((0, 2))
+    assert not bk.maybe_place(three_piece) 
+
+def test_prevent_own_edges_2() -> None:
+    bk = Blokus(2, 10, {(0, 0), (9, 9)})
+    c_piece = Piece(bk.shapes[ShapeKind.C])
+    c_piece.set_anchor((0, 0))
+    assert bk.maybe_place(c_piece)
+
+    four_piece = Piece(bk.shapes[ShapeKind.FOUR])
+    four_piece.set_anchor((9, 7))
+    assert bk.maybe_place(four_piece)
+
+    seven_piece = Piece(bk.shapes[ShapeKind.SEVEN])
+    seven_piece.set_anchor((2, 2))
+    assert not bk.maybe_place(seven_piece)
+    seven_piece.set_anchor((3, 2))
+    assert bk.maybe_place(seven_piece)
+
+    f_piece = Piece(bk.shapes[ShapeKind.F])
+    f_piece.set_anchor((7, 6))
+    assert not bk.maybe_place(f_piece)
+    f_piece.set_anchor((7, 5))
+
+    a1_piece = Piece(bk.shapes[ShapeKind.A])
+    a1_piece.set_anchor((4, 4))
+    a1_piece.rotate_left()
+    assert bk.maybe_place(a1_piece)
+
+    a2_piece = Piece(bk.shapes[ShapeKind.A])
+    a2_piece.set_anchor((6, 3))
+    a1_piece.rotate_right()
+    assert bk.maybe_place(a2_piece)
+
+def test_require_own_corners_1() -> None:
+    bk = Blokus(1, 5, {(0, 0)})
+    l_piece = Piece(bk.shapes[ShapeKind.L])
+    l_piece.set_anchor((2, 0))
+    assert bk.maybe_place(l_piece)
+
+    three_piece = Piece(bk.shapes[ShapeKind.THREE])
+    three_piece.set_anchor((4, 4))
+    assert not bk.maybe_place(three_piece) 
+
+def test_require_own_corners_2() -> None:
+    pass
+
+def test_some_available_moves() -> None:
+    bk = Blokus(1, 10, {(0, 0)})
+    left_1 = len(bk.available_moves())
+    assert left_1 != 0
+    p_piece = Piece(bk.shapes[ShapeKind.P])
+    p_piece.set_anchor((1, 1))
+    assert bk.maybe_place(p_piece)
+    left_2 = len(bk.available_moves())
+    assert left_1 > left_2
+
+    t_piece = Piece(bk.shapes[ShapeKind.T])
+    t_piece.set_anchor((3, 3))
+    assert bk.maybe_place(t_piece)
+    left_3 = len(bk.available_moves())
+    assert left_2 > left_3
+
+    v_piece = Piece(bk.shapes[ShapeKind.V])
+    v_piece.set_anchor((2, 6))
+    assert bk.maybe_place(t_piece)
+    left_4 = len(bk.available_moves())
+    assert left_3 > left_4
+
+def place_piece(kind: ShapeKind, row: int, col: int) -> None:
+    bk = Blokus(1, 20, {(0, 0)})
+    piece = Piece(bk.shapes[kind])
+    piece.set_anchor((row, col))
+    assert bk.maybe_place(piece)
+
+def place_all(monimono: bool) -> Blokus:
+    bk = Blokus(1, 20, {(0, 0)})
+        
+    l = Piece(bk.shapes[ShapeKind.L])
+    l.set_anchor((0, 1))
+    l.rotate_right
+    bk.maybe_place(l)
+
+    v = Piece(bk.shapes[ShapeKind.V])
+    v.set_anchor((2, 3))
+    bk.maybe_place(v)
+
+    x = Piece(bk.shapes[ShapeKind.X])
+    x.set_anchor((5, 5))
+    bk.maybe_place(x)
+
+    t = Piece(bk.shapes[ShapeKind.T])
+    t.set_anchor((2, 7))
+    t.rotate_left()
+    bk.maybe_place(t)
+
+    if not monimono:
+        one = Piece(bk.shapes[ShapeKind.ONE])
+        one.set_anchor((3, 9))
+        bk.maybe_place(one)
+
+    five = Piece(bk.shapes[ShapeKind.FIVE])
+    five.set_anchor((0, 9))
+    five.rotate_left()
+    bk.maybe_place(five)
+
+    four = Piece(bk.shapes[ShapeKind.FOUR])
+    four.set_anchor((1, 13))
+    bk.maybe_place(four)
+
+    three = Piece(bk.shapes[ShapeKind.THREE])
+    three.set_anchor((0, 17))
+    bk.maybe_place(three)
+
+    y = Piece(bk.shapes[ShapeKind.Y])
+    y.set_anchor((2, 18))
+    y.flip_horizontally()
+    y.rotate_right()
+    bk.maybe_place(y)
+
+    a = Piece(bk.shapes[ShapeKind.A])
+    a.set_anchor((4, 16))
+    y.flip_horizontally()
+    bk.maybe_place(a)
+
+    two = Piece(bk.shapes[ShapeKind.TWO])
+    two.set_anchor((6, 17))
+    bk.maybe_place(two)
+
+    n = Piece(bk.shapes[ShapeKind.N])
+    n.set_anchor((9, 15))
+    n.rotate_left()
+    n.rotate_left
+    bk.maybe_place(n)
+
+    c = Piece(bk.shapes[ShapeKind.C])
+    c.set_anchor((12, 14))
+    c.rotate_right()
+    c.rotate_right()
+    bk.maybe_place(c)
+
+    u = Piece(bk.shapes[ShapeKind.U])
+    u.set_anchor((10, 12))
+    u.rotate_left()
+    bk.maybe_place(u)
+
+    o = Piece(bk.shapes[ShapeKind.LETTER_O])
+    o.set_anchor((12, 9))
+    bk.maybe_place(o)
+
+    s = Piece(bk.shapes[ShapeKind.S])
+    s.set_anchor((13, 7))
+    s.flip_horizontally()
+    bk.maybe_place(s)
+
+    seven = Piece(bk.shapes[ShapeKind.SEVEN])
+    seven.set_anchor((5, 13))
+    seven.flip_horizontally()
+    seven.rotate_left()
+    bk.maybe_place(seven)
+
+    p = Piece(bk.shapes[ShapeKind.P])
+    p.set_anchor((5, 1))
+    bk.maybe_place(p)
+
+    z = Piece(bk.shapes[ShapeKind.Z])
+    z.set_anchor((7, 2))
+    z.rotate_right()
+    bk.maybe_place(z)
+
+    f = Piece(bk.shapes(ShapeKind.F))
+    f.set_anchor((10, 2))
+    bk.maybe_place(f)
+
+    if monimono:
+        one = Piece(bk.shapes[ShapeKind.ONE])
+        one.set_anchor((3, 9))
+        bk.maybe_place(one)
+
+    return bk
+
+def test_no_available_moves() -> None:
+    bk = place_all(True)
+    assert len(bk.available_moves) == 0
+
+def test_15_points() -> None:
+    bk = place_all(False)
+    assert bk.game_over
+    assert bk.get_score(1) == 15
+    assert bk.winners == [1]
+    assert not bk.remaining_shapes(1)
+
+def test_20_points() -> None:
+    bk = place_all(True)
+    assert bk.game_over
+    assert bk.get_score(1) == 20
+    assert bk.winners == [1]    
+    assert not bk.remaining_shapes(1)
 
 
