@@ -233,6 +233,7 @@ class Piece:
         """
         self._check_anchor()
         self.shape.flip_horizontally()
+            
 
     def rotate_left(self) -> None:
         """

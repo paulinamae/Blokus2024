@@ -414,7 +414,7 @@ class Blokus(BlokusBase):
                     maybe_pieces.add(Piece(self.shapes[shapekind]))
                     maybe_pieces.add(Piece(self.shapes[shapekind]).flip_horizontally())
                     maybe_pieces.add(Piece(self.shapes[shapekind]).rotate_left())
-                    maybe_pieces.add(Piece(self.shapes[shapekind]).rotate_right)
+                    maybe_pieces.add(Piece(self.shapes[shapekind]).rotate_right())
 
                     for maybe_piece in maybe_pieces:
                         maybe_piece.set_anchor((x, y))
