@@ -45,8 +45,10 @@ class NBot(Player):
 
     def strategy(self, avail_moves: set[Piece]) -> Piece:
         rand: Piece = random.choice(list(avail_moves))
-        #print("   N:",rand.shape.kind)
         return rand
+    
+    def make_move(self) -> None:
+        super().make_move()
     
 
 class SBot(Player):
@@ -66,8 +68,10 @@ class SBot(Player):
         for piece in avail_moves:
             shape_sizes[len(piece.shape.squares)] = piece
         max_size: int = max(shape_sizes)
-        #print("   S:",shape_sizes[max_size].shape.kind)
         return shape_sizes[max_size]
+    
+    def make_move(self) -> None:
+        super().make_move()
 
 # Simulate games
 
@@ -83,25 +87,13 @@ for i in range(num_games):
 
     bot_game: BlokusFake = BlokusFake(2, 11, start_positions)
 
-    bot1: NBot = NBot(bot_game, 1)
-    bot2: SBot = SBot(bot_game,2)
+    bot1: SBot = SBot(bot_game, 1)
+    bot2: NBot = NBot(bot_game, 2)
 
-    #i = 0
     while not bot_game.game_over:
-        #i += 1
-        #print("Move:", i)
-        #print("first:", bot_game._curr_player)
+        bot1.make_move()
         bot2.make_move()
-        #print("Bot 1:", bot_game._shapes_placed[1])
-        #print("second:",bot_game._curr_player)
-        bot2.make_move()
-        #print("Bot 2:", bot_game._shapes_placed[2])
                
-
-    print("N-bot:",bot_game.get_score(1))
-    print("   ", bot_game._shapes_left[1])
-    print("S-bot:",bot_game.get_score(2))
-    print("   ", bot_game._shapes_left[2])
     if bot_game.winners is not None:
         if len(bot_game.winners) > 1:
             ties += 1
