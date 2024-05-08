@@ -575,27 +575,34 @@ def test_require_own_corners_2() -> None:
     assert bk.maybe_place(two_piece)
 
 def test_some_available_moves() -> None:
-    bk = Blokus(1, 10, {(0, 0)})
+    bk = Blokus(1, 7, {(0, 0)})
     left_1 = len(bk.available_moves())
     assert left_1 != 0
     p_piece = Piece(bk.shapes[ShapeKind.P])
     p_piece.set_anchor((1, 1))
     assert bk.maybe_place(p_piece)
-    print(len(bk._shapes_left[bk.curr_player]))
     left_2 = len(bk.available_moves())
+<<<<<<< HEAD
     assert left_1 > left_2
+=======
+    assert left_1 < left_2
+>>>>>>> 6f32c21 (help)
 
     t_piece = Piece(bk.shapes[ShapeKind.T])
     t_piece.set_anchor((3, 3))
     assert bk.maybe_place(t_piece)
-    print(len(bk._shapes_left[bk.curr_player]))
     left_3 = len(bk.available_moves())
+    print(left_2)
+    print(left_3)
     assert left_2 > left_3
 
-    v_piece = Piece(bk.shapes[ShapeKind.V])
-    v_piece.set_anchor((2, 6))
-    assert bk.maybe_place(t_piece)
-    print(len(bk._shapes_left[bk.curr_player]))
+    two = Piece(bk.shapes[ShapeKind.TWO])
+    two.set_anchor((5, 4))
+    assert bk.maybe_place(two)
+
+    #v_piece = Piece(bk.shapes[ShapeKind.V])
+    #v_piece.set_anchor((2, 6))
+    #assert bk.maybe_place(v_piece)
     left_4 = len(bk.available_moves())
     assert left_3 > left_4
 
