@@ -295,25 +295,26 @@ class Blokus(BlokusBase):
         
         if self._shapes_placed[self._curr_player] == set(): # checks start pos
             in_start: bool = False
-            for square in piece.squares:
+            for square in piece.squares():
                 if square in self.start_positions:
-                    in_start = True
-                    break
+                    return True
             if not in_start:
                 return False        
 
-        piece_cardinals: set[Point] = piece.cardinal_neighbors()
-        piece_intercardinals: set[Point] = piece.intercardinal_neighbors()
+        piece_cardinals: set[Point] = piece.cardinal_neighbors(self.size)
+        piece_intercardinals: set[Point] = piece.intercardinal_neighbors(self.size)
 
         for point in piece_cardinals: # piece can't have adjacent edge with piece u alr played
             r, c = point
-            if self._grid[r][c][0] == self.curr_player:
-                return False
+            if self._grid[r][c]:
+                if self._grid[r][c][0] == self.curr_player: 
+                    return False
         
         for point in piece_intercardinals: # piece has to share corner with previously placed piece
             r, c = point
-            if self._grid[r][c][0] == self.curr_player:
-                return True
+            if self._grid[r][c]:
+                if self._grid[r][c][0] == self.curr_player:
+                    return True
     
         return False
 
@@ -354,9 +355,11 @@ class Blokus(BlokusBase):
         # Update current player status and board
         self._num_moves += 1
         self._shapes_placed[self.curr_player].add(piece.shape.kind)
+        self._last_moves[self.curr_player] = piece.shape.kind
         self._shapes_left[self.curr_player].remove(piece.shape.kind)
-        if not self._shapes_left[self.curr_player]:
-            self._last_moves[self.curr_player] = piece.shape.kind
+        #f not self._shapes_left[self.curr_player]:
+            # at this point because we j remvoed the current piece self.currplayer already returns 0 b/c game over 
+            #self._last_moves[self.curr_player] = piece.shape.kind
 
         # Move to next player
         if ((self._curr_player % self.num_players) + 1) not in self._retired_players:
@@ -390,7 +393,7 @@ class Blokus(BlokusBase):
         if not self._shapes_left[player]:
             score += 15
             if self._last_moves[player] == ShapeKind.ONE:
-                score += 20
+                score += 5
 
         return score
 
@@ -411,14 +414,28 @@ class Blokus(BlokusBase):
             for x in range(self._size):
                 for y in range(self._size):
                     maybe_pieces: set[Piece] = set()
-                    maybe_pieces.add(Piece(self.shapes[shapekind]))
-                    maybe_pieces.add(Piece(self.shapes[shapekind]).flip_horizontally())
-                    maybe_pieces.add(Piece(self.shapes[shapekind]).rotate_left())
-                    maybe_pieces.add(Piece(self.shapes[shapekind]).rotate_right())
+                    one = Piece(self.shapes[shapekind])
+                    one.set_anchor((x, y))
+                    maybe_pieces.add(one)
+
+                    two = Piece(self.shapes[shapekind])
+                    two.set_anchor((x, y))
+                    two.flip_horizontally()
+                    maybe_pieces.add(two)
+
+                    three = Piece(self.shapes[shapekind])
+                    three.set_anchor((x, y))
+                    three.rotate_right()
+                    maybe_pieces.add(three)
+
+                    four = Piece(self.shapes[shapekind])
+                    four.set_anchor((x, y))
+                    four.rotate_left()
+                    maybe_pieces.add(four)
 
                     for maybe_piece in maybe_pieces:
-                        maybe_piece.set_anchor((x, y))
                         if self.legal_to_place(maybe_piece):
                             avail_moves.add(maybe_piece)
 
         return avail_moves
+# its becasue you're limited with the first move as it must cover the stating square 

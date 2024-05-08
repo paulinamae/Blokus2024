@@ -136,11 +136,13 @@ class Shape:
         (across the vertical axis through its origin),
         by modifying the squares in place.
         """
+        new_squares: list[Point] = []
         for square in self.squares:
             row, col = square 
             new_square = (row, -col)
-            self.squares.remove(square)
-            self.squares.append(new_square)
+            new_squares.append(new_square)
+
+        self.squares = new_squares
 
     def rotate_left(self) -> None:
         """
@@ -317,22 +319,18 @@ class Piece:
         for r, c in self.squares():
             if not (r - 1 < 0) and not (c + 1 >= board_size):
                 northeast_neighbor: Point = (r - 1, c + 1)
-                if northeast_neighbor not in self.squares():
-                    result.add(northeast_neighbor)
+                result.add(northeast_neighbor)
             
             if not (r + 1 >= board_size) and not (c + 1 >= board_size):
                 southeast_neighbor: Point = (r + 1, c + 1)
-                if southeast_neighbor not in self.squares():
-                    result.add(southeast_neighbor)
+                result.add(southeast_neighbor)
             
             if not (r - 1 < 0) and not (c - 1 < 0):
                 northwest_neighbor: Point = (r - 1, c - 1)
-                if northwest_neighbor not in self.squares():
-                    result.add(northwest_neighbor)
+                result.add(northwest_neighbor)
             
             if not (r + 1 >= board_size) and not (c - 1 < 0):
-                southwest_neighbor: Point = (r - 1, c + 1)
-                if southwest_neighbor not in self.squares():
-                    result.add(southwest_neighbor)
+                southwest_neighbor: Point = (r + 1, c - 1)
+                result.add(southwest_neighbor)
         
-        return result
+        return result - self.cardinal_neighbors(board_size) - set(self.squares())

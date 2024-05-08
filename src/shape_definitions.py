@@ -84,7 +84,6 @@ definitions: dict[ShapeKind, str] = {
     #
     ShapeKind.FOUR: """
          XOXX
-        XXOX
          """,
     ShapeKind.SEVEN: """
          XX
