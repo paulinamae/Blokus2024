@@ -408,34 +408,41 @@ class Blokus(BlokusBase):
         to a single Shape that are considered available moves
         (because they may differ in location and orientation).
         """
+        empty_squares: set[tuple[int,int]] = set()
+        i: int = -1
+        for row in self.grid:
+            i += 1
+            for j in range(len(row)):
+                if self.grid[i][j] == None:
+                    empty_squares.add((i,j))
+
         avail_moves: set[Piece] = set()
-        
+ 
         for shapekind in self._shapes_left[self._curr_player]:
-            for x in range(self._size):
-                for y in range(self._size):
-                    maybe_pieces: set[Piece] = set()
-                    one = Piece(self.shapes[shapekind])
-                    one.set_anchor((x, y))
-                    maybe_pieces.add(one)
+            for empty_square in empty_squares:
+                maybe_pieces: set[Piece] = set()
+                one = Piece(self.shapes[shapekind])
+                one.set_anchor(empty_square)
+                maybe_pieces.add(one)
 
-                    two = Piece(self.shapes[shapekind])
-                    two.set_anchor((x, y))
-                    two.flip_horizontally()
-                    maybe_pieces.add(two)
+                two = Piece(self.shapes[shapekind])
+                two.set_anchor(empty_square)
+                two.flip_horizontally()
+                maybe_pieces.add(two)
 
-                    three = Piece(self.shapes[shapekind])
-                    three.set_anchor((x, y))
-                    three.rotate_right()
-                    maybe_pieces.add(three)
+                three = Piece(self.shapes[shapekind])
+                three.set_anchor(empty_square)
+                three.rotate_right()
+                maybe_pieces.add(three)
 
-                    four = Piece(self.shapes[shapekind])
-                    four.set_anchor((x, y))
-                    four.rotate_left()
-                    maybe_pieces.add(four)
+                four = Piece(self.shapes[shapekind])
+                four.set_anchor(empty_square)
+                four.rotate_left()
+                maybe_pieces.add(four)
 
-                    for maybe_piece in maybe_pieces:
-                        if self.legal_to_place(maybe_piece):
-                            avail_moves.add(maybe_piece)
+                for maybe_piece in maybe_pieces:
+                    if self.legal_to_place(maybe_piece):
+                        avail_moves.add(maybe_piece)
 
         return avail_moves
 # its becasue you're limited with the first move as it must cover the stating square 

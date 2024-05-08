@@ -1,7 +1,8 @@
 import sys,random
 from base import Cell, BlokusBase
 from fakes import BlokusFake
-from piece import Point, Piece, Shape
+from piece import Point, Piece, Shape, ShapeKind
+from blokus import Blokus
 
 # Classes that represent players with different strategies
 
@@ -45,6 +46,7 @@ class NBot(Player):
 
     def strategy(self, avail_moves: set[Piece]) -> Piece:
         rand: Piece = random.choice(list(avail_moves))
+        print("N:",rand.shape.kind)
         return rand
     
     def make_move(self) -> None:
@@ -68,6 +70,7 @@ class SBot(Player):
         for piece in avail_moves:
             shape_sizes[len(piece.shape.squares)] = piece
         max_size: int = max(shape_sizes)
+        print("S:",shape_sizes[max_size].shape.kind)
         return shape_sizes[max_size]
     
     def make_move(self) -> None:
@@ -87,8 +90,8 @@ for i in range(num_games):
 
     bot_game: BlokusFake = BlokusFake(2, 11, start_positions)
 
-    bot1: SBot = SBot(bot_game, 1)
-    bot2: NBot = NBot(bot_game, 2)
+    bot1: NBot = NBot(bot_game, 1)
+    bot2: SBot = SBot(bot_game, 2)
 
     while not bot_game.game_over:
         bot1.make_move()
@@ -105,33 +108,3 @@ for i in range(num_games):
 print(f"Bot 1 Wins |  {one_wins/num_games*100:.2f} %")
 print(f"Bot 2 Wins |  {two_wins/num_games*100:.2f} %")
 print(f"Ties       |  {ties/num_games*100:.2f} %")
-
-"""
-# MILESTONE 1 IMPLEMENTATION OF BOT.PY
-
-for i in range(num_games):
-
-    bot_game: BlokusStub = BlokusStub(2, 14, set())
-
-    while not bot_game.game_over:
-        bot1_move: Point = (random.randint(0,13),random.randint(0,13))
-        bot2_move: Point = (random.randint(0,13),random.randint(0,13))
-        if bot_game.available_moves() == set():
-            bot_game.retire()
-        for piece in bot_game.available_moves():
-            check_anchor: Point|None = piece.anchor
-            if bot1_move == check_anchor:
-                bot_game.maybe_place(piece)
-            if bot2_move == check_anchor:
-                bot_game.maybe_place(piece)
-    
-    win_square: Cell = bot_game.grid[0][13]
-    if win_square is not None:
-        player,shape = win_square
-        if player == 1:
-            zero_wins += 1
-        else:
-            one_wins += 1
-    else:
-        ties += 1
-"""

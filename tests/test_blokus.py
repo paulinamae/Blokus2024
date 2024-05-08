@@ -6,6 +6,7 @@ from shape_definitions import ShapeKind
 from piece import Shape, Piece
 from base import BlokusBase
 from blokus import Blokus
+from fakes import BlokusFake
 
 def test_inheritance() -> None:
     """Test that Blokus inherits from BlokusBase"""
@@ -582,7 +583,7 @@ def test_some_available_moves() -> None:
     assert bk.maybe_place(p_piece)
     print(len(bk._shapes_left[bk.curr_player]))
     left_2 = len(bk.available_moves())
-    # assert left_1 > left_2
+    assert left_1 > left_2
 
     t_piece = Piece(bk.shapes[ShapeKind.T])
     t_piece.set_anchor((3, 3))
