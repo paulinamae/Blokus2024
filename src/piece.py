@@ -114,8 +114,11 @@ class Shape:
                     all_coords.append((r_coord, c_coord))
             c_coord = -1
 
-        if not o_coords:
+        if kind == ShapeKind.LETTER_O or kind == ShapeKind.ONE:
             o_coords = (0,0)
+            transformed: bool = False
+        elif kind == ShapeKind.X:
+            o_coords = (1, 1)
             transformed: bool = False
         else:
             transformed = True
@@ -194,7 +197,7 @@ class Piece:
         Each Piece will get its own deep copy of the given shape
         subject to initial transformations according to the arguments:
 
-            face_up:  If true, the initial Shape will be flipped
+            face_up:  If false, the initial Shape will be flipped
                       horizontally.
             rotation: This number, modulo 4, indicates how many
                       times the shape should be right-rotated by

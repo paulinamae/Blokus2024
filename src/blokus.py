@@ -425,26 +425,35 @@ class Blokus(BlokusBase):
             for x in range(self._size):
                 for y in range(self._size):
                     one = Piece(self.shapes[shapekind])
-                    one.set_anchor((x, y))
+                    one.set_anchor((y, x))
                     if self.legal_to_place(one):
                         avail_moves.add(one)
 
-                    if self.shapes[shapekind].can_be_transformed:
+                    if self.shapes[shapekind].can_be_transformed: # does transforming change the squares?
                         two = Piece(self.shapes[shapekind])
-                        two.set_anchor((x, y))
+                        two.set_anchor((y, x))
                         two.flip_horizontally()
-                        if self.legal_to_place(two):
-                            avail_moves.add(two)
+                        two1 = Piece(self.shapes[shapekind])
+                        two1.set_anchor((y, x))
+                        if set(two.squares()) != set(two1.squares()): # does flipping horizontally change the squares?
+                            if self.legal_to_place(two):
+                                avail_moves.add(two)
 
                         three = Piece(self.shapes[shapekind])
-                        three.set_anchor((x, y))
+                        three.set_anchor((y, x))
                         three.rotate_right()
-                        if self.legal_to_place(three):
-                            avail_moves.add(three)
+                        three1 = Piece(self.shapes[shapekind])
+                        three1.set_anchor((y, x))
+                        if set(three.squares()) != set(three1.squares()):
+                            if self.legal_to_place(three):
+                                avail_moves.add(three)
 
                         four = Piece(self.shapes[shapekind])
-                        four.set_anchor((x, y))
+                        four.set_anchor((y, x))
                         four.rotate_left()
-                        if self.legal_to_place(four):
-                            avail_moves.add(four)
+                        four1 = Piece(self.shapes[shapekind])
+                        four1.set_anchor((y, x))
+                        if set(four.squares()) != set(four1.squares()): # does rotating left change the squares?
+                            if self.legal_to_place(four):
+                                avail_moves.add(four)
         return avail_moves
