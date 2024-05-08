@@ -419,35 +419,6 @@ class Blokus(BlokusBase):
         avail_moves: set[Piece] = set()
  
         for shapekind in self._shapes_left[self._curr_player]:
-<<<<<<< HEAD
-            for empty_square in empty_squares:
-                maybe_pieces: set[Piece] = set()
-                one = Piece(self.shapes[shapekind])
-                one.set_anchor(empty_square)
-                maybe_pieces.add(one)
-
-                two = Piece(self.shapes[shapekind])
-                two.set_anchor(empty_square)
-                two.flip_horizontally()
-                maybe_pieces.add(two)
-
-                three = Piece(self.shapes[shapekind])
-                three.set_anchor(empty_square)
-                three.rotate_right()
-                maybe_pieces.add(three)
-
-                four = Piece(self.shapes[shapekind])
-                four.set_anchor(empty_square)
-                four.rotate_left()
-                maybe_pieces.add(four)
-
-                for maybe_piece in maybe_pieces:
-                    if self.legal_to_place(maybe_piece):
-                        avail_moves.add(maybe_piece)
-
-        return avail_moves
-# its becasue you're limited with the first move as it must cover the stating square 
-=======
             for x in range(self._size):
                 for y in range(self._size):
                     one = Piece(self.shapes[shapekind])
@@ -474,4 +445,3 @@ class Blokus(BlokusBase):
                         if self.legal_to_place(four):
                             avail_moves.add(four)
         return avail_moves
->>>>>>> 6f32c21 (help)
