@@ -20,7 +20,7 @@ class Blokus(BlokusBase):
     _grid: Grid
     _curr_player: int
     _num_moves: int
-    _last_moves: dict[int, ShapeKind]
+    _last_moves: dict[int, ShapeKind|None]
 
     def __init__(
         self,
@@ -202,7 +202,7 @@ class Blokus(BlokusBase):
         Returns a list of shape kinds that a particular
         player has not yet played.
         """
-        return self._shapes_left[player]
+        return list(self._shapes_left[player])
 
     def any_wall_collisions(self, piece: Piece) -> bool:
         """
@@ -304,13 +304,16 @@ class Blokus(BlokusBase):
         piece_cardinals: set[Point] = piece.cardinal_neighbors(self.size)
         piece_intercardinals: set[Point] = piece.intercardinal_neighbors(self.size)
 
-        for point in piece_cardinals: # piece can't have adjacent edge with piece u alr played
+        # piece can't have adjacent edge with piece already played by current player
+        for point in piece_cardinals: 
             r, c = point
             if self._grid[r][c]:
-                if self._grid[r][c][0] == self.curr_player: 
-                    return False
+                if self._grid[r][c]:
+                    if self._grid[r][c][0] == self.curr_player:
+                        return False
         
-        for point in piece_intercardinals: # piece has to share corner with previously placed piece
+        # piece has to share corner with previously placed piece
+        for point in piece_intercardinals: 
             r, c = point
             if self._grid[r][c]:
                 if self._grid[r][c][0] == self.curr_player:
@@ -340,7 +343,7 @@ class Blokus(BlokusBase):
         is None.
         """
         
-        if piece.shape.kind in self._shapes_placed[self._curr_player]:
+        if piece.shape.kind in self._shapes_placed[self.curr_player]:
             raise ValueError("Piece already placed")
 
         if piece.anchor is None:
