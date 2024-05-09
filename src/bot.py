@@ -46,7 +46,6 @@ class NBot(Player):
 
     def strategy(self, avail_moves: set[Piece]) -> Piece:
         rand: Piece = random.choice(list(avail_moves))
-        #print("N:",rand.shape.kind)
         return rand
     
     def make_move(self) -> None:
@@ -70,7 +69,6 @@ class SBot(Player):
         for piece in avail_moves:
             shape_sizes[len(piece.shape.squares)] = piece
         max_size: int = max(shape_sizes)
-        #print("S:",shape_sizes[max_size].shape.kind)
         return shape_sizes[max_size]
     
     def make_move(self) -> None:

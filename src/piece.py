@@ -98,7 +98,6 @@ class Shape:
                     spaces.append(count)
                     break
 
-        o_coords = None
         r_coord: int = -1
         c_coord: int = -1
         all_coords: list[Point] = list()
@@ -108,7 +107,7 @@ class Shape:
             for char in newline:
                 c_coord += 1
                 if char == "O" or char == "@":
-                    o_coords = (r_coord,c_coord)
+                    o_coords: tuple[int,int] = (r_coord,c_coord)
                     all_coords.append((r_coord, c_coord))
                 if char == "X":
                     all_coords.append((r_coord, c_coord))
@@ -119,7 +118,7 @@ class Shape:
             transformed: bool = False
         elif kind == ShapeKind.X:
             o_coords = (1, 1)
-            transformed: bool = False
+            transformed = False
         else:
             transformed = True
         final: list[Point]= []
