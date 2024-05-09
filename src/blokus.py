@@ -411,14 +411,7 @@ class Blokus(BlokusBase):
         to a single Shape that are considered available moves
         (because they may differ in location and orientation).
         """
-        empty_squares: set[tuple[int,int]] = set()
-        i: int = -1
-        for row in self.grid:
-            i += 1
-            for j in range(len(row)):
-                if self.grid[i][j] == None:
-                    empty_squares.add((i,j))
-
+        
         avail_moves: set[Piece] = set()
  
         for shapekind in self._shapes_left[self._curr_player]:
