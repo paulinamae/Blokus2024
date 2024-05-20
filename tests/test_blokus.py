@@ -484,9 +484,9 @@ def test_start_positions_3() -> None:
     assert bk.maybe_place(five_piece)
 
 def test_place_flipped_shape_1() -> None:
-    """Create an instance of any 1-player Blokus game configuration. 
-    Choose a piece, anchor it somewhere, flip it, and verify that its squares() are correct. Then place the piece, and verify that grid stores the correct values for every cell in the matrix."""
-
+    """For a 1-player Blokus game configuration, tests that a flipped piece's 
+    squares() are correct. After placing the piece, tests that grid stores 
+    the correct values for every cell in the matrix."""
     bk = Blokus(1, 5, {(0, 0)})
     s_piece = Piece(bk.shapes[ShapeKind.S])
     s_piece.set_anchor((0, 1))
@@ -499,6 +499,9 @@ def test_place_flipped_shape_1() -> None:
         assert bk.grid[r][c][0] == bk.curr_player and bk.grid[r][c][1] == ShapeKind.S
 
 def test_rotated_shape_1() -> None:
+    """For a 1-player Blokus game configuration, tests that a right-rotated piece's 
+    squares() are correct. After placing the piece, tests that grid stores 
+    the correct values for every cell in the matrix."""
     bk = Blokus(1, 5, {(0, 0)})
     a_piece = Piece(bk.shapes[ShapeKind.A])
     a_piece.set_anchor((1, 0))
@@ -511,6 +514,9 @@ def test_rotated_shape_1() -> None:
         assert bk.grid[r][c][0] == bk.curr_player and bk.grid[r][c][1] == ShapeKind.A
 
 def test_rotated_shape_2() -> None:
+    """For a 1-player Blokus game configuration, tests that a left-rotated piece's 
+    squares() are correct. After placing the piece, tests that grid stores 
+    the correct values for every cell in the matrix."""
     bk = Blokus(1, 5, {(0, 0)})
     a_piece = Piece(bk.shapes[ShapeKind.A])
     a_piece.set_anchor((0, 1))
@@ -524,6 +530,9 @@ def test_rotated_shape_2() -> None:
         assert bk.grid[r][c][0] == bk.curr_player and bk.grid[r][c][1] == ShapeKind.A
 
 def test_flipped_and_rotated_shape_1() -> None:
+    """For a 1-player Blokus game configuration, tests that flipped and 
+    then right-rotated three times piece's squares() are correct. After placing the 
+    piece, tests that grid stores the correct values for every cell in the matrix."""
     bk = Blokus(1, 5, {(1, 0)})
     s_piece = Piece(bk.shapes[ShapeKind.S])
     s_piece.set_anchor((1, 0))
@@ -539,6 +548,9 @@ def test_flipped_and_rotated_shape_1() -> None:
         assert bk.grid[r][c][0] == bk.curr_player and bk.grid[r][c][1] == ShapeKind.S
 
 def test_flipped_and_rotated_shape_2() -> None:
+    """For a 1-player Blokus game configuration, tests that flipped twice and 
+    then right-rotated four times piece's squares() are correct. After placing the 
+    piece, tests that grid stores the correct values for every cell in the matrix."""
     bk = Blokus(1, 5, {(1, 1)})
     f_piece = Piece(bk.shapes[ShapeKind.F])
     f_piece.set_anchor((1, 1))
@@ -556,7 +568,9 @@ def test_flipped_and_rotated_shape_2() -> None:
         assert bk.grid[r][c][0] == bk.curr_player and bk.grid[r][c][1] == ShapeKind.F
 
 def test_prevent_own_edges_1() -> None:
-    ""
+    """For a 1-player Blokus game configuration, after placing a piece, 
+    tests that the player cannot place another piece that shares an edge 
+    with their first played piece."""
     bk = Blokus(1, 5, {(0, 0)})
     l_piece = Piece(bk.shapes[ShapeKind.L])
     l_piece.set_anchor((2, 0))
@@ -570,7 +584,7 @@ def test_prevent_own_edges_2() -> None:
     """
     Tests that a player's piece cannot share an edge with their own pieces but
     can share an edge with other
-players' pieces.    """
+    players' pieces."""
     bk = Blokus(2, 10, {(0, 0), (9, 9)})
     c_piece = Piece(bk.shapes[ShapeKind.C])
     c_piece.set_anchor((0, 0))

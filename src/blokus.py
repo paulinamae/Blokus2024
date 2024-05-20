@@ -367,9 +367,6 @@ class Blokus(BlokusBase):
         self._shapes_placed[self.curr_player].add(piece.shape.kind)
         self._last_moves[self.curr_player] = piece.shape.kind
         self._shapes_left[self.curr_player].remove(piece.shape.kind)
-        #f not self._shapes_left[self.curr_player]:
-            # at this point because we j remvoed the current piece self.currplayer already returns 0 b/c game over 
-            #self._last_moves[self.curr_player] = piece.shape.kind
 
         # Move to next player
         if ((self._curr_player % self.num_players) + 1) not in self._retired_players:
@@ -444,7 +441,7 @@ class Blokus(BlokusBase):
                         three.rotate_right()
                         three1 = Piece(self.shapes[shapekind])
                         three1.set_anchor((y, x))
-                        if set(three.squares()) != set(three1.squares()):
+                        if set(three.squares()) != set(three1.squares()): # does rotating right change the squares?
                             if self.legal_to_place(three):
                                 avail_moves.add(three)
 
@@ -465,9 +462,8 @@ class Blokus(BlokusBase):
         method, a move is determined by a Piece, namely, one of
         the 21 Shapes plus a location and orientation.
 
-        Notice there may be many different Pieces corresponding
-        to a single Shape that are considered available moves
-        (because they may differ in location and orientation).
+        Does not consider any horizontal flips, left rotations, or right rotations.
+        This method is used in bot.py to ensure a faster runtime.
         """
 
         empty_squares: set[tuple[int,int]] = set()

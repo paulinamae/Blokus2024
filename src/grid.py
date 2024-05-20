@@ -6,6 +6,7 @@ from blokus import Blokus
 from textwrap import *
 
 def grid_to_string(grid: Grid) -> str:
+    
     dim = len(grid)
     final = "||" * (dim + 2)
     for row in grid:
