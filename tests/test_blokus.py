@@ -15,6 +15,9 @@ def test_inheritance() -> None:
     ), "Blokus should inherit from BlokusBase"
 
 def test_init_blokus_mini_1() -> None:
+    """Tests that the size, start_positions, num_players, 
+    curr_player, and grid properties have been initialized 
+    correctly for a 1-player Blokus Mini game configuration"""
     blokus_mini = Blokus(1, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
     
     assert blokus_mini.num_players == 1
@@ -25,6 +28,9 @@ def test_init_blokus_mini_1() -> None:
     assert not blokus_mini.game_over
 
 def test_init_blokus_mini_2() -> None:
+    """Tests that the size, start_positions, num_players, 
+    curr_player, and grid properties have been initialized 
+    correctly for a 2-player Blokus Mini game configuration"""
     blokus_mini = Blokus(2, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
 
     assert blokus_mini.num_players == 2
@@ -35,6 +41,9 @@ def test_init_blokus_mini_2() -> None:
     assert not blokus_mini.game_over
 
 def test_init_blokus_mono() -> None:
+    """Tests that the size, start_positions, num_players, 
+    curr_player, and grid properties have been initialized 
+    correctly for a Blokus Mono game configuration"""
     blokus_mono = Blokus(1, 11, {(5, 5)})
 
     assert blokus_mono.num_players == 1
@@ -45,6 +54,9 @@ def test_init_blokus_mono() -> None:
     assert not blokus_mono.game_over
 
 def test_init_blokus_duo_2() -> None:
+    """Tests that the size, start_positions, num_players, 
+    curr_player, and grid properties have been initialized 
+    correctly for a Blokus Duo game configuration"""
     blokus_duo = Blokus(2, 14, {(4, 4), (9, 9)})
 
     assert blokus_duo.num_players == 2
@@ -55,6 +67,8 @@ def test_init_blokus_duo_2() -> None:
     assert not blokus_duo.game_over
 
 def test_shapes_loaded() -> None:
+    """Tests that the shapes dictionary has been correctly initialized 
+    with all 21 Blokus shapes"""
     bk = Blokus(1, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
 
     shape = bk.shapes[ShapeKind.ONE]
@@ -185,6 +199,8 @@ def test_shapes_loaded() -> None:
     assert set(shape.squares) == {(-1, -1), (-1, 0), (0, 0), (1, 0), (1, 1)}
 
 def test_some_flipped_shapes() -> None:
+    """Tests that at least three kinds of shapes can be flipped correctly 
+    via the Shape.flip_horizontally method."""
     bk = Blokus(1, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
 
     z_shape = bk.shapes[ShapeKind.Z]
@@ -200,6 +216,8 @@ def test_some_flipped_shapes() -> None:
     assert set(w_shape.squares) == {(0, 0), (0, -1), (-1, -1), (1, 0), (1, 1)}
 
 def test_some_left_rotated_shapes() -> None:
+    """Tests that at least three kinds of shapes can be flipped correctly 
+    via the Shape.rotate_left method."""
     bk = Blokus(1, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
 
     z_shape = bk.shapes[ShapeKind.Z]
@@ -215,6 +233,8 @@ def test_some_left_rotated_shapes() -> None:
     assert set(w_shape.squares) == {(0, 0), (0, 1), (1, 1), (-1, 0), (-1, -1)}
 
 def test_some_right_rotated_shapes() -> None:
+    """Tests that at least three kinds of shapes can be flipped correctly 
+    via the Shape.rotate_right method."""
     bk = Blokus(1, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
 
     z_shape = bk.shapes[ShapeKind.Z]
@@ -230,6 +250,8 @@ def test_some_right_rotated_shapes() -> None:
     assert set(w_shape.squares) == {(0, 0), (0, -1), (1, 0), (-1, -1), (1, 1)}
 
 def test_some_cardinal_neighbors() -> None:
+    """Tests that Piece.cardinal_neighbors correctly computes the cardinal 
+    neighbors of at least three kinds of pieces"""
     bk1 = Blokus(1, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
     
     f_piece = Piece(bk1.shapes[ShapeKind.F])
@@ -247,6 +269,8 @@ def test_some_cardinal_neighbors() -> None:
     assert w_piece.cardinal_neighbors(bk3.size) == {(1, 0), (0, 1), (3, 0), (3, 1), (2, 2), (1, 3), (0, 3)}
 
 def test_some_intercardinal_neighbors() -> None:
+    """Tests that Piece.intercardinal_neighbors correctly computes the cardinal 
+    neighbors of at least three kinds of pieces"""
     bk1 = Blokus(1, 5, {(1, 1), (0,0), (0, 4), (4,0), (4, 4), (2, 2)})
     
     f_piece = Piece(bk1.shapes[ShapeKind.F])
@@ -264,6 +288,10 @@ def test_some_intercardinal_neighbors() -> None:
     assert w_piece.intercardinal_neighbors(bk3.size) == {(0, 0), (3, 2), (2, 3)}
 
 def test_one_player_blokus_mini_game() -> None:
+    """For a 1-player Blokus mini game configuration, tests that the player 
+    can place two or more pieces before retiring, verifying that the values 
+    of game_over and curr_player are correct at each step. Verifies the values 
+    of game_over, winners, and get_score(1)."""
     bk = Blokus(1, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
 
     z_piece = Piece(bk.shapes[ShapeKind.Z])
@@ -287,6 +315,10 @@ def test_one_player_blokus_mini_game() -> None:
     assert bk.get_score(1) == -80
 
 def test_two_player_blokus_mini_game() -> None:
+    """For a 2-player Blokus mini game configuration, tests that each player 
+    can place two or more pieces before retiring, verifying that the values 
+    of game_over and curr_player are correct at each step. Verifies the values 
+    of game_over, winners, get_score(1), and get_score(2)"""
     bk = Blokus(2, 5, {(0,0), (0, 4), (4,0), (4, 4), (2, 2)})
 
     c1_piece = Piece(bk.shapes[ShapeKind.C])
@@ -328,6 +360,12 @@ def test_two_player_blokus_mini_game() -> None:
     assert bk.get_score(2) == -84
     
 def test_exception_init() -> None:
+    """Tests that four calls to the Blokus constructor each raise a ValueError,
+      one for each of the four situations described in the docstring:
+            if num_players is less than 1 or more than 4,
+            if the size is less than 5,
+            if not all start_positions are on the board, or
+            if there are fewer start_positions than num_players."""
     with pytest.raises(ValueError):
         bk = Blokus(0, 5, {(0, 0)})
     with pytest.raises(ValueError):
@@ -335,11 +373,13 @@ def test_exception_init() -> None:
     with pytest.raises(ValueError):
         bk = Blokus(1, 4, {(0, 0)})
     with pytest.raises(ValueError):
-        bk = Blokus(1, 5, {(6, 6)})
+        bk = Blokus(1, 5, {(2, 6)})
     with pytest.raises(ValueError):
         bk = Blokus(2, 5, {(0, 0)})
 
 def test_exception_place_already_played() -> None:
+    """Tests that maybe_place raises a ValueError when trying to place an 
+    already played piece."""
     bk = Blokus(1, 5, {(0, 0)})
     one_piece = Piece(bk.shapes[ShapeKind.ONE])
     one_piece.set_anchor((0, 0))
@@ -351,6 +391,8 @@ def test_exception_place_already_played() -> None:
         bk.maybe_place(another_one_piece)
     
 def test_exception_place_without_anchor() -> None:
+    """Tests that maybe_place raises a ValueError when 
+    trying to place a piece without an anchor."""
     bk = Blokus(1, 5, {(0, 0)})
     one_piece = Piece(bk.shapes[ShapeKind.ONE])
 
@@ -358,6 +400,12 @@ def test_exception_place_without_anchor() -> None:
         bk.maybe_place(one_piece)
 
 def test_start_positions_1() -> None:
+    """For a 1-player Blokus game configuration with one start position, tests
+    that maybe_place will not place a piece that does not cover the start 
+    position. Tests that maybe_place will place a 
+    piece that does cover the start position, and that the player can place a
+    second piece on the board.
+    """
     bk = Blokus(1, 5, {(0, 0)})
     one_piece = Piece(bk.shapes[ShapeKind.ONE])
     one_piece.set_anchor((1, 1))
@@ -372,6 +420,13 @@ def test_start_positions_1() -> None:
     assert bk.maybe_place(three_piece)
 
 def test_start_positions_2() -> None:
+    """For a 2-player Blokus game configuration with two start positions, tests
+    that Player 1 cannot place a piece that doesn't cover a start position,
+    and that Player 2 cannot place a piece that doesn't cover a start position
+    or that covers the occupied start position. Tests that Player 2 can then cover 
+    the remaining start position. Tests that Player 1 and Player 2
+    can then each play another piece. 
+    """
     bk = Blokus(2, 10, {(0,0), (9, 9)})
     seven_piece = Piece(bk.shapes[ShapeKind.SEVEN])
     seven_piece.set_anchor((2, 2))
@@ -397,6 +452,13 @@ def test_start_positions_2() -> None:
     assert bk.maybe_place(five_piece)
 
 def test_start_positions_3() -> None:
+    """For a 2-player Blokus game configuration with four start positions, tests
+    that Player 1 cannot place a piece that doesn't cover a start position,
+    and that Player 2 cannot place a piece that doesn't cover a start position
+    or that covers the occupied start position. Tests that Player 2 can then cover 
+    the remaining start position. Tests that Player 1 and Player 2
+    can then each play another piece. 
+    """
     bk = Blokus(2, 10, {(0,0), (9, 9), (0, 9), (9, 0)})
     seven_piece = Piece(bk.shapes[ShapeKind.SEVEN])
     seven_piece.set_anchor((2, 2))
@@ -422,6 +484,9 @@ def test_start_positions_3() -> None:
     assert bk.maybe_place(five_piece)
 
 def test_place_flipped_shape_1() -> None:
+    """For a 1-player Blokus game configuration, tests that a flipped piece's 
+    squares() are correct. After placing the piece, tests that grid stores 
+    the correct values for every cell in the matrix."""
     bk = Blokus(1, 5, {(0, 0)})
     s_piece = Piece(bk.shapes[ShapeKind.S])
     s_piece.set_anchor((0, 1))
@@ -434,6 +499,9 @@ def test_place_flipped_shape_1() -> None:
         assert bk.grid[r][c][0] == bk.curr_player and bk.grid[r][c][1] == ShapeKind.S
 
 def test_rotated_shape_1() -> None:
+    """For a 1-player Blokus game configuration, tests that a right-rotated piece's 
+    squares() are correct. After placing the piece, tests that grid stores 
+    the correct values for every cell in the matrix."""
     bk = Blokus(1, 5, {(0, 0)})
     a_piece = Piece(bk.shapes[ShapeKind.A])
     a_piece.set_anchor((1, 0))
@@ -446,6 +514,9 @@ def test_rotated_shape_1() -> None:
         assert bk.grid[r][c][0] == bk.curr_player and bk.grid[r][c][1] == ShapeKind.A
 
 def test_rotated_shape_2() -> None:
+    """For a 1-player Blokus game configuration, tests that a left-rotated piece's 
+    squares() are correct. After placing the piece, tests that grid stores 
+    the correct values for every cell in the matrix."""
     bk = Blokus(1, 5, {(0, 0)})
     a_piece = Piece(bk.shapes[ShapeKind.A])
     a_piece.set_anchor((0, 1))
@@ -459,6 +530,9 @@ def test_rotated_shape_2() -> None:
         assert bk.grid[r][c][0] == bk.curr_player and bk.grid[r][c][1] == ShapeKind.A
 
 def test_flipped_and_rotated_shape_1() -> None:
+    """For a 1-player Blokus game configuration, tests that flipped and 
+    then right-rotated three times piece's squares() are correct. After placing the 
+    piece, tests that grid stores the correct values for every cell in the matrix."""
     bk = Blokus(1, 5, {(1, 0)})
     s_piece = Piece(bk.shapes[ShapeKind.S])
     s_piece.set_anchor((1, 0))
@@ -474,6 +548,9 @@ def test_flipped_and_rotated_shape_1() -> None:
         assert bk.grid[r][c][0] == bk.curr_player and bk.grid[r][c][1] == ShapeKind.S
 
 def test_flipped_and_rotated_shape_2() -> None:
+    """For a 1-player Blokus game configuration, tests that flipped twice and 
+    then right-rotated four times piece's squares() are correct. After placing the 
+    piece, tests that grid stores the correct values for every cell in the matrix."""
     bk = Blokus(1, 5, {(1, 1)})
     f_piece = Piece(bk.shapes[ShapeKind.F])
     f_piece.set_anchor((1, 1))
@@ -491,6 +568,9 @@ def test_flipped_and_rotated_shape_2() -> None:
         assert bk.grid[r][c][0] == bk.curr_player and bk.grid[r][c][1] == ShapeKind.F
 
 def test_prevent_own_edges_1() -> None:
+    """For a 1-player Blokus game configuration, after placing a piece, 
+    tests that the player cannot place another piece that shares an edge 
+    with their first played piece."""
     bk = Blokus(1, 5, {(0, 0)})
     l_piece = Piece(bk.shapes[ShapeKind.L])
     l_piece.set_anchor((2, 0))
@@ -501,6 +581,10 @@ def test_prevent_own_edges_1() -> None:
     assert not bk.maybe_place(three_piece) 
 
 def test_prevent_own_edges_2() -> None:
+    """
+    Tests that a player's piece cannot share an edge with their own pieces but
+    can share an edge with other
+    players' pieces."""
     bk = Blokus(2, 10, {(0, 0), (9, 9)})
     c_piece = Piece(bk.shapes[ShapeKind.C])
     c_piece.set_anchor((0, 0))
@@ -533,6 +617,10 @@ def test_prevent_own_edges_2() -> None:
     assert bk.maybe_place(a1_piece)
 
 def test_require_own_corners_1() -> None:
+    """
+    Tests that a player cannot play pieces that share zero corners with their own
+    pieces.
+    """
     bk = Blokus(1, 5, {(0, 0)})
     l_piece = Piece(bk.shapes[ShapeKind.L])
     l_piece.set_anchor((2, 0))
@@ -543,6 +631,10 @@ def test_require_own_corners_1() -> None:
     assert not bk.maybe_place(three_piece) 
 
 def test_require_own_corners_2() -> None:
+    """
+    Tests that a player cannot play pieces that share zero corners with their own
+    pieces but can share zero corners with other players' pieces.
+    """
     bk = Blokus(2, 10, {(0, 0), (9, 9)})
     c_piece = Piece(bk.shapes[ShapeKind.C])
     c_piece.set_anchor((0, 0))
@@ -575,6 +667,12 @@ def test_require_own_corners_2() -> None:
     assert bk.maybe_place(two_piece)
 
 def test_some_available_moves() -> None:
+    """
+    Test that create an instance of any Blokus game configuration. Verifies that 
+    available_moves is non-empty. Plays a few pieces, and verify that the number 
+    of available_moves for a player increases after their first move and then 
+    decreases after subsequent moves.
+    """
     bk = Blokus(1, 7, {(0, 0)})
     print(len(bk._shapes_left))
     left_1 = len(bk.available_moves())
@@ -600,6 +698,13 @@ def test_some_available_moves() -> None:
     assert left_3 > left_4
 
 def place_all(monimono: bool) -> Blokus:
+    """
+    A helper function that places all the pieces on the board, and either places
+    the monimono as the last piece or not based on the input.
+    Input:
+        monimono [bool]: True if monimono is the last piece, False otherwise
+    Returns [Blokus]: the updated state of the Blokus game
+    """
     bk = Blokus(1, 20, {(0, 0)})
         
     l = Piece(bk.shapes[ShapeKind.L])
@@ -709,10 +814,19 @@ def place_all(monimono: bool) -> Blokus:
     return bk
 
 def test_no_available_moves() -> None:
+    """
+    Create an instance of any Blokus game configuration. Play pieces until there 
+    are no more available moves, and verify that available_moves is empty.
+    """
     bk = place_all(True)
     assert len(bk.available_moves()) == 0
 
 def test_15_points() -> None:
+    """
+    Simulate a game where a player scores 15 points (plays all 21 of 
+    their pieces). After all 21 pieces are played and the game is over, verify 
+    the expected values for get_score(), game_over, winners, and remaining_shapes.
+    """
     bk = place_all(False)
     assert bk.game_over
     assert bk.get_score(1) == 15
@@ -720,10 +834,18 @@ def test_15_points() -> None:
     assert not bk.remaining_shapes(1)
 
 def test_20_points() -> None:
+    """
+    Simulate a game where a player scores 15 points (plays all 21 of 
+    their pieces and ONE is the last piece placed). After all 21 pieces are 
+    played and the game is over, verify the expected values for get_score(), 
+    game_over, winners, and remaining_shapes.
+    """
     bk = place_all(True)
+    print(bk.grid)
     assert bk.game_over
     assert bk.get_score(1) == 20
     assert bk.winners == [1]    
     assert not bk.remaining_shapes(1)
+    
 
 
