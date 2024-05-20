@@ -584,7 +584,7 @@ def test_some_available_moves() -> None:
     assert bk.maybe_place(p_piece)
     print(len(bk._shapes_left))
     left_2 = len(bk.available_moves())
-    # assert left_1 > left_2
+    assert left_1 < left_2
 
     t_piece = Piece(bk.shapes[ShapeKind.T])
     t_piece.set_anchor((3, 3))

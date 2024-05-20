@@ -411,14 +411,7 @@ class Blokus(BlokusBase):
         to a single Shape that are considered available moves
         (because they may differ in location and orientation).
         """
-        empty_squares: set[tuple[int,int]] = set()
-        i: int = -1
-        for row in self.grid:
-            i += 1
-            for j in range(len(row)):
-                if self.grid[i][j] == None:
-                    empty_squares.add((i,j))
-
+        
         avail_moves: set[Piece] = set()
  
         for shapekind in self._shapes_left[self._curr_player]:
@@ -456,4 +449,35 @@ class Blokus(BlokusBase):
                         if set(four.squares()) != set(four1.squares()): # does rotating left change the squares?
                             if self.legal_to_place(four):
                                 avail_moves.add(four)
+        return avail_moves
+    
+    def fake_available_moves(self) -> set[Piece]:
+        """
+        Returns the set of all possible moves that the current
+        player may make. As with the arguments to the maybe_place
+        method, a move is determined by a Piece, namely, one of
+        the 21 Shapes plus a location and orientation.
+
+        Notice there may be many different Pieces corresponding
+        to a single Shape that are considered available moves
+        (because they may differ in location and orientation).
+        """
+
+        empty_squares: set[tuple[int,int]] = set()
+        i: int = -1
+        for row in self.grid:
+            i += 1
+            for j in range(len(row)):
+                if self.grid[i][j] == None:
+                    empty_squares.add((i,j))
+
+        avail_moves: set[Piece] = set()
+ 
+        for shapekind in self._shapes_left[self._curr_player]:
+            for empty_square in empty_squares:
+                maybe_piece: Piece = Piece(self.shapes[shapekind])
+                maybe_piece.set_anchor(empty_square)
+                if self.legal_to_place(maybe_piece) and piece not in avail_moves:
+                    avail_moves.add(maybe_piece)
+
         return avail_moves

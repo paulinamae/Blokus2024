@@ -19,15 +19,25 @@ SQUARE_SIZE: int = 36
 FONT_SIZE: int = 0
 FONT_SPACING: int = 0
 players: int = 0
-start_positions: set[tuple[int, int]] = set()
+start_positions: set[Point] = set()
 
 @click.command()
-@click.option('--game')
+@click.option('--game', type=str)
 @click.option('--num-players', '-n', default=2, type=int)
 @click.option('--size', '-s', default=14, type=int)
 @click.option('--start-position', '-p', multiple=True, nargs=2, type=(int, int))
 def assign_specs(game, num_players, size, start_position) -> None:
-    global SCREEN_SIZE, FONT_SIZE, players, start_positions
+    """
+        Uses the click library to assign the specifications of the board given
+        by the command line.
+
+        Inputs:
+            game: String
+            num_players: int
+            size: int
+            start_position: tuple(int, int)
+    """
+    global SCREEN_SIZE, FONT_SIZE, players, start_positions, last_anchor
     if game == "duo":
         SCREEN_SIZE = 14
         FONT_SIZE = 20
@@ -64,19 +74,12 @@ def assign_specs(game, num_players, size, start_position) -> None:
         start_positions.add((0, 19))
         start_positions.add((19, 0))
     else:
-        print("here")
         SCREEN_SIZE = size
         players = num_players
-        FONT_SIZE = int(SCREEN_SIZE * 1.4)
+        FONT_SIZE = int(SCREEN_SIZE * 1.45)
         for pos in start_position:
-            x, y = pos
-            start_positions.add((x - 1, y - 1))
-
-    click.echo(f"Game: {game}")
-    click.echo(f"Screen Size: {SCREEN_SIZE}")
-    click.echo(f"Font Size: {FONT_SIZE}")
-    click.echo(f"Number of Players: {players}")
-    click.echo(f"Start Positions: {start_positions}")
+            r, c = pos
+            start_positions.add((r - 1, c - 1))
 
 if __name__ == '__main__':
     assign_specs.main(standalone_mode=False)
@@ -100,7 +103,16 @@ player_colors: dict[int, Color] = {}
 for i in range(board.num_players):
     player_colors[i + 1] = piece_colors.pop(0)
 
+last_anchor: Point = (SCREEN_SIZE // 2, SCREEN_SIZE // 2)
+
 def draw_piece_bank(selected_piece: Piece) -> None:
+    """
+        Draws the piece bank on the side of the board and updates piece 
+        representations as they're placed/selected.
+
+        Inputs:
+            selected_piece: Piece
+    """
     blank_bank = pygame.Rect(SCREEN_SIZE * SQUARE_SIZE, 0, SIDEBAR_SIZE, PIECE_BANK_LENGTH)
     pygame.draw.rect(SCREEN, SCREEN_COLOR, blank_bank)
     for player in range(1, players + 1):
@@ -123,14 +135,21 @@ def draw_piece_bank(selected_piece: Piece) -> None:
             SCREEN.blit(text, (text_x_coord, text_y_coord))
             y_counter += 1
 
-    print(board.curr_player)
     current_player: int = board.curr_player
-    current_player_color: Color = player_colors[current_player]
-    text = player_font.render(str(current_player), False, current_player_color)
+    if current_player == 0:
+        current_player_color: Color = player_colors[1]
+        text = player_font.render("X", False, (255, 255, 255))
+    else:
+        current_player_color: Color = player_colors[current_player]
+        text = player_font.render(str(current_player), False, current_player_color)
     pygame.draw.circle(SCREEN, START_POSITION_COLOR, ((SIDEBAR_SIZE // 2) + (SCREEN_SIZE * SQUARE_SIZE), SQUARE_SIZE // 1.7), SQUARE_SIZE // 2)
     SCREEN.blit(text, (((SCREEN_SIZE * SQUARE_SIZE) + (SIDEBAR_SIZE // 2)) - (SQUARE_SIZE // 5), SQUARE_SIZE // 4))
 
 def draw_score_bank() -> None:
+    """
+        Draws the score bank below the board and updates the player(s) score(s)
+        and retirement status(es) during the game.
+    """
     blank_bank = pygame.Rect(0, SCREEN_SIZE * SQUARE_SIZE, PIECE_BANK_LENGTH, SIDEBAR_SIZE)
     pygame.draw.rect(SCREEN, SCREEN_COLOR, blank_bank)
     for player in range(1, players + 1):
@@ -145,6 +164,13 @@ def draw_score_bank() -> None:
         SCREEN.blit(status_text, ((((SCREEN_SIZE * SQUARE_SIZE) + SIDEBAR_SIZE) // 3) + (((SCREEN_SIZE * SQUARE_SIZE) + SIDEBAR_SIZE) // 4), (SCREEN_SIZE * SQUARE_SIZE) + ((player - 1) * SQUARE_SIZE) + FONT_SPACING))
 
 def update_board(selected_piece: Piece) -> None:
+    """
+        Draws the board itself, including the squares, start positions,
+        placed pieces, and the selected piece.
+        
+        Inputs:
+            selected_piece: Piece
+    """
     draw_piece_bank((selected_piece))
     draw_score_bank()
 
@@ -156,11 +182,11 @@ def update_board(selected_piece: Piece) -> None:
             pygame.gfxdraw.rectangle(SCREEN, rect, SCREEN_COLOR)
     
     for position in start_positions:
-        x, y = position
-        x = (x * SQUARE_SIZE) + SQUARE_SIZE // 2
-        y = (y * SQUARE_SIZE) + SQUARE_SIZE // 2
-        r = SQUARE_SIZE // 4
-        pygame.gfxdraw.filled_circle(SCREEN, x, y, r, START_POSITION_COLOR)
+        r, c = position
+        r = (r * SQUARE_SIZE) + SQUARE_SIZE // 2
+        c = (c * SQUARE_SIZE) + SQUARE_SIZE // 2
+        rad = SQUARE_SIZE // 4
+        pygame.gfxdraw.filled_circle(SCREEN, c, r, rad, START_POSITION_COLOR)
     
     #updates the already placed pieces
     for r in range(len(board._grid)):
@@ -168,37 +194,52 @@ def update_board(selected_piece: Piece) -> None:
             if board._grid[r][c] is not None:
                 player, kind = board._grid[r][c]
                 piece_color = player_colors[player]
-                piece_rect = pygame.Rect(r * SQUARE_SIZE,  c * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
+                piece_rect = pygame.Rect(c * SQUARE_SIZE,  r * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
                 pygame.draw.rect(SCREEN, piece_color, piece_rect)
 
     #manages the selected piece
     selected_piece_coords = selected_piece.squares()
-    r, g, b = player_colors[board.curr_player]
+    if board.curr_player > 0:
+        r, g, b = player_colors[board.curr_player]
+    else:
+        r, g, b = player_colors[1]
     selected_piece_color = (r + 70, g + 70, b + 70)
 
     #draws selected piece
     for r, c in selected_piece_coords:
-        piece_rect = pygame.Rect(r * SQUARE_SIZE,  c * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
-        pygame.draw.rect(SCREEN, selected_piece_color, piece_rect)
+        if r < SCREEN_SIZE and c < SCREEN_SIZE:
+            piece_rect = pygame.Rect(c * SQUARE_SIZE,  r * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
+            pygame.draw.rect(SCREEN, selected_piece_color, piece_rect)
     
     #updates surrounding cells
     for r in range(0, SCREEN_SIZE):
         for c in range(0, SCREEN_SIZE):
             if (r, c) not in selected_piece_coords and (r, c) not in start_positions and board._grid[r][c] is None:
-                rect = pygame.Rect(r * SQUARE_SIZE,  c * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
+                rect = pygame.Rect(c * SQUARE_SIZE,  r * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)
                 pygame.draw.rect(SCREEN, SQUARE_COLOR, rect)
                 pygame.gfxdraw.rectangle(SCREEN, rect, SCREEN_COLOR)
 
-def game_loop() -> None:
+def game_loop(piece_anchor: Point) -> None:
+    """
+        Main game loop for the players, is executed for each player's turn.
+
+        Inputs:
+            piece_anchor: Point
+    """
     run: bool = True
-    current_player = board.curr_player
-    pieces_left: list[ShapeKind] = board.remaining_shapes(current_player)
-    random_shapekind: ShapeKind = random.choice(pieces_left)
-    current_piece: Piece = Piece(Shape.from_string(random_shapekind, definitions[random_shapekind]))
-    current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2))
-    x, y = current_piece.anchor
+
+    if board.curr_player > 0: 
+        current_player = board.curr_player
+        pieces_left: list[ShapeKind] = board.remaining_shapes(current_player)
+        random_shapekind: ShapeKind = random.choice(pieces_left)
+        current_piece: Piece = Piece(Shape.from_string(random_shapekind, definitions[random_shapekind]))
+        piece_anchor: Point = piece_anchor
+        current_piece.set_anchor(piece_anchor)
+        r, c = current_piece.anchor
+    else:
+        current_player = 1
     
-    while run:
+    while run and not board.game_over:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.display.quit()
@@ -211,115 +252,123 @@ def game_loop() -> None:
                 if event.key == pygame.K_1:
                     if ShapeKind.ONE in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.ONE, definitions[ShapeKind.ONE]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2))
+                        current_piece.set_anchor(piece_anchor)
                 if event.key == pygame.K_2:
                     if ShapeKind.TWO in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.TWO, definitions[ShapeKind.TWO]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2))
+                        current_piece.set_anchor(piece_anchor)
                 if event.key == pygame.K_3:
                     if ShapeKind.THREE in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.THREE, definitions[ShapeKind.THREE]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2))
+                        current_piece.set_anchor(piece_anchor)
                 if event.key == pygame.K_4:
                     if ShapeKind.FOUR in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.FOUR, definitions[ShapeKind.FOUR]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2))
+                        current_piece.set_anchor(piece_anchor)
                 if event.key == pygame.K_5:
                     if ShapeKind.FIVE in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.FIVE, definitions[ShapeKind.FIVE]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2))
+                        current_piece.set_anchor(piece_anchor)
                 if event.key == pygame.K_7:
                     if ShapeKind.SEVEN in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.SEVEN, definitions[ShapeKind.SEVEN]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2))
+                        current_piece.set_anchor(piece_anchor)
                 if event.key == pygame.K_a:
                     if ShapeKind.A in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.A, definitions[ShapeKind.A]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2)) 
+                        current_piece.set_anchor(piece_anchor)
                 if event.key == pygame.K_c:
                     if ShapeKind.C in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.C, definitions[ShapeKind.C]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2))
+                        current_piece.set_anchor(piece_anchor)
                 if event.key == pygame.K_f:
                     if ShapeKind.F in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.F, definitions[ShapeKind.F]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2))
+                        current_piece.set_anchor(piece_anchor)
                 if event.key == pygame.K_s:
                     if ShapeKind.S in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.S, definitions[ShapeKind.S]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2))
+                        current_piece.set_anchor(piece_anchor)
                 if event.key == pygame.K_l: 
                     if ShapeKind.L in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.L, definitions[ShapeKind.L]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2))
+                        current_piece.set_anchor(piece_anchor)
                 if event.key == pygame.K_n: 
                     if ShapeKind.N in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.N, definitions[ShapeKind.N]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2))
+                        current_piece.set_anchor(piece_anchor)
                 if event.key == pygame.K_o: 
                     if ShapeKind.LETTER_O in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.LETTER_O, definitions[ShapeKind.LETTER_O]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2))
+                        current_piece.set_anchor(piece_anchor)
                 if event.key == pygame.K_p: 
                     if ShapeKind.P in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.P, definitions[ShapeKind.P]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2))
+                        current_piece.set_anchor(piece_anchor)
                 if event.key == pygame.K_t: 
                     if ShapeKind.T in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.T, definitions[ShapeKind.T]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2))
+                        current_piece.set_anchor(piece_anchor)
                 if event.key == pygame.K_u: 
                     if ShapeKind.U in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.U, definitions[ShapeKind.U]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2)) 
+                        current_piece.set_anchor(piece_anchor)
                 if event.key == pygame.K_v: 
                     if ShapeKind.V in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.V, definitions[ShapeKind.V]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2))
+                        current_piece.set_anchor(piece_anchor)
                 if event.key == pygame.K_w: 
                     if ShapeKind.W in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.W, definitions[ShapeKind.W]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2))
+                        current_piece.set_anchor(piece_anchor)
                 if event.key == pygame.K_x: 
                     if ShapeKind.X in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.X, definitions[ShapeKind.X]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2)) 
+                        current_piece.set_anchor(piece_anchor) 
                 if event.key == pygame.K_y: 
                     if ShapeKind.Y in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.Y, definitions[ShapeKind.Y]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2)) 
+                        current_piece.set_anchor(piece_anchor) 
                 if event.key == pygame.K_z: 
                     if ShapeKind.Z in board.remaining_shapes(current_player):
                         current_piece = Piece(Shape.from_string(ShapeKind.Z, definitions[ShapeKind.Z]))
-                        current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2))
+                        current_piece.set_anchor(piece_anchor)
                 if event.key == pygame.K_UP:
-                    current_piece.set_anchor((x, y - 1))
+                    current_piece.set_anchor((r - 1, c))
+                    piece_anchor = (r - 1, c)
                     if not board.any_wall_collisions(current_piece):
-                        x, y = current_piece.anchor
+                        r, c = current_piece.anchor
                     else:
-                        current_piece.set_anchor((x, y))
-                        x, y = current_piece.anchor
+                        current_piece.set_anchor((r, c))
+                        r, c = current_piece.anchor
+                        piece_anchor = (r, c)
                 if event.key == pygame.K_DOWN:
-                    current_piece.set_anchor((x, y + 1))
+                    current_piece.set_anchor((r + 1, c))
+                    piece_anchor = (r + 1, c)
                     if not board.any_wall_collisions(current_piece):
-                       x, y = current_piece.anchor
+                       r, c = current_piece.anchor
                     else:
-                        current_piece.set_anchor((x, y))
-                        x, y = current_piece.anchor
+                        current_piece.set_anchor((r, c))
+                        r, c = current_piece.anchor
+                        piece_anchor = (r, c)
                 if event.key == pygame.K_LEFT:
-                    current_piece.set_anchor((x - 1, y))
+                    current_piece.set_anchor((r, c - 1))
+                    piece_anchor = (r, c - 1)
                     if not board.any_wall_collisions(current_piece):
-                        x, y = current_piece.anchor
+                        r, c = current_piece.anchor
                     else:
-                        current_piece.set_anchor((x, y))
-                        x, y = current_piece.anchor
+                        current_piece.set_anchor((r, c))
+                        r, c = current_piece.anchor
+                        piece_anchor = (r, c)
                 if event.key == pygame.K_RIGHT:
-                    current_piece.set_anchor((x + 1, y))
+                    current_piece.set_anchor((r, c + 1))
+                    piece_anchor = (r, c + 1)
                     if not board.any_wall_collisions(current_piece):
-                        x, y = current_piece.anchor
+                        r, c = current_piece.anchor
                     else:
-                        current_piece.set_anchor((x, y))
-                        x, y = current_piece.anchor
+                        current_piece.set_anchor((r, c))
+                        r, c = current_piece.anchor
+                        piece_anchor = (r, c)
                 if event.key == pygame.K_r:
                     current_piece.rotate_right()
                 if event.key == pygame.K_e:
@@ -333,20 +382,30 @@ def game_loop() -> None:
                     run = False
                     if not board.game_over:
                         break
+        update_board(current_piece)
+        pygame.display.update()   
         
-        if board.game_over:
-            run = False
-            winners = board.winners
+    if board.game_over:
+        winners = board.winners
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.display.quit()
+                    pygame.quit()
+                    quit()
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.display.quit()
             if len(winners) > 1:
-                winners_text = player_font.render(f'the winners are players {winners}!!', False, (0, 0, 0))
+                winners_text = player_font.render(f'the winners are players {winners}!', False, (0, 0, 0))
             else:
-                winners_text = player_font.render(f'the winner is player {winners}!!', False, (0, 0, 0))
-            SCREEN.blit(winners_text, (((SCREEN_SIZE * SQUARE_SIZE) + SIDEBAR_SIZE) // 2, (((SCREEN_SIZE * SQUARE_SIZE) + SIDEBAR_SIZE) // 2) - winners_text.get_width()))
+                winners_text = player_font.render(f'the winner is player {winners}!', False, (0, 0, 0))
+            SCREEN.blit(winners_text, (((SCREEN_SIZE * SQUARE_SIZE)) // 2 - (((SCREEN_SIZE * SQUARE_SIZE)) // 4), (((SCREEN_SIZE * SQUARE_SIZE)) // 2)))
+            current_piece = Piece(Shape.from_string(ShapeKind.ONE, definitions[ShapeKind.ONE]))
+            current_piece.set_anchor((SCREEN_SIZE // 2, SCREEN_SIZE // 2))
+            pygame.display.update() 
 
-        if board.curr_player > 0:
-            update_board(current_piece)
-            pygame.display.update()
+    if not board.game_over:
+        game_loop(piece_anchor)
 
-    game_loop()
-
-game_loop()
+game_loop(last_anchor)
