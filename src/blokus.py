@@ -465,7 +465,6 @@ class Blokus(BlokusBase):
         Does not consider any horizontal flips, left rotations, or right rotations.
         This method is used in bot.py to ensure a faster runtime.
         """
-
         empty_squares: set[tuple[int,int]] = set()
         i: int = -1
         for row in self.grid:
