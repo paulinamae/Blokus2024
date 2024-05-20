@@ -12,7 +12,7 @@ class Player:
     S (satisfactory), or U (unsatisfactory) strategy.
     """
 
-    _bot_gme: Blokus
+    _bot_game: Blokus
     _player: int
 
     def __init__(self, bot_game: Blokus, player: int):
@@ -23,6 +23,7 @@ class Player:
     def retired(self) -> bool:
         """
         Check if player has retired from the game.
+        Returns [bool]: True if the player has retired, false otherwise.
         """
         if self._player in self._bot_game._retired_players:
             return True
@@ -31,12 +32,16 @@ class Player:
     def strategy(self, avail_moves: set[Piece])-> Piece:
         """
         Choose a piece to place based on a given strategy.
+        Inputs:
+            avail_moves [set[Piece]]: a set of available moves to choose from
+        Returns [Piece]: the piece to play
         """
         raise NotImplementedError
 
     def make_move(self) -> None:
         """
         Make a move using a piece that was determined by a specific strategy.
+        Returns [None]
         """
         if not self.retired:
             avail_moves: set[Piece] = self._bot_game.fake_available_moves()
@@ -79,6 +84,9 @@ class SBot(Player):
     def biggest_piece(self, avail_moves: set[Piece]) -> Piece:
         """
         Find a piece with the largest size out of the available pieces.
+        Inputs:
+            avail_moves [set[Piece]]: the set of all available moves
+        Returns [Piece]: the largest piece out of the set
         """
 
         shape_sizes: dict[int,Piece] = {}
@@ -94,7 +102,7 @@ class UBot(Player):
 
     """
     A Blokus player that uses an "unsatisfactory" strategy by playing the smallest
-    piece possible.
+    piece possible at every turn.
     """
 
     def __init__(self, bot_game: Blokus, player: int):
@@ -106,6 +114,9 @@ class UBot(Player):
     def smallest_piece(self, avail_moves: set[Piece]) -> Piece:
         """
         Find a piece with the smallest size out of the available pieces.
+        Inputs:
+            avail_moves [set[Piece]]: the set of all available moves
+        Returns [Piece]: the smallest piece out of the set
         """
 
         shape_sizes: dict[int,Piece] = {}
@@ -129,9 +140,9 @@ class UBot(Player):
 @click.option("-2", "--player2",
               type=click.Choice(["S", "N", "U"]),
               required=True)
-def cmd(num_games: int, player1: str, player2: str) -> None:
 
-    # Simulate games
+# Simulate games
+def cmd(num_games: int, player1: str, player2: str) -> None:
 
     one_wins: int = 0
     two_wins: int = 0
