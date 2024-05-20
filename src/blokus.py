@@ -48,8 +48,7 @@ class Blokus(BlokusBase):
         if self._size < 5:
             raise ValueError("Size must be greater than 5.")
         for position in self._start_positions:
-            x,y = position
-            if not (0 <= x <= self._size or 0 <= y <= self._size):
+            if not self.valid_coordinate(position):
                 raise ValueError("Choose valid start position.")
         if len(self._start_positions) < self._num_players:
             raise ValueError("Not enough start positions.")  
@@ -70,7 +69,6 @@ class Blokus(BlokusBase):
         for player in range(1, self._num_players + 1):
             self._shapes_left[player] = set(self.shapes.keys())
             self._last_moves[player] = None
-            
 
     @property
     def shapes(self) -> dict[ShapeKind, Shape]:
@@ -196,7 +194,16 @@ class Blokus(BlokusBase):
     #
     # METHODS
     #
-
+    def valid_coordinate(self, coord):
+        """
+        Check if a coordinate is on the board. Return True if so and False otherwise.
+        Inputs:
+            coord [tuple[int,int]]: coordinate that is being checked
+        Returns [bool]
+        """
+        x,y = coord
+        return (0 <= x <= self._size and 0 <= y <= self._size)  
+    
     def remaining_shapes(self, player: int) -> list[ShapeKind]:
         """
         Returns a list of shape kinds that a particular
