@@ -721,9 +721,11 @@ def test_15_points() -> None:
 
 def test_20_points() -> None:
     bk = place_all(True)
+    print(bk.grid)
     assert bk.game_over
     assert bk.get_score(1) == 20
     assert bk.winners == [1]    
     assert not bk.remaining_shapes(1)
+    
 
 
