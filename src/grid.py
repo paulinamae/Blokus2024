@@ -6,7 +6,15 @@ from blokus import Blokus
 from textwrap import *
 
 def grid_to_string(grid: Grid) -> str:
-    
+    """
+    A function to convert the Grid attribute of a Blokus board to a string
+    representation
+
+    Inputs:
+        grid [Grid]: a Grid representing the current state of the Blokus board
+
+    Returns [str]: a string representation of the Grid
+    """
     dim = len(grid)
     final = "||" * (dim + 2)
     for row in grid:
@@ -26,6 +34,15 @@ def grid_to_string(grid: Grid) -> str:
     return final
 
 def string_to_grid(s: str) -> Grid:
+    """
+    A function to convert a string representation of a Grid to an instance of
+    the Grid variable as defined in the Blokus class
+
+    Inputs:
+        s [str]: a string representation of the Grid
+
+    Returns [Grid]: a Grid representing the current state of the Blokus board
+    """
     new = s.splitlines()
     del new[0]
     size = int((len(new[0]) / 2 ) - 2)
@@ -40,6 +57,11 @@ def string_to_grid(s: str) -> Grid:
     return new_grid
 
 def test_grid_1() -> None:
+    """
+    Tests that converting a Blokus Grid to str and then back to Grid 
+    recovers the original information for a 2 player, 10x10 board with 4 
+    pieces placed.
+    """
     bk = Blokus(2, 10, {(0, 0), (9, 9)})
 
     l = Piece(bk.shapes[ShapeKind.L])
@@ -78,6 +100,11 @@ def test_grid_1() -> None:
     assert grid == string_to_grid(grid_to_string(grid))
 
 def test_grid_2() -> None:
+    """
+    Tests that converting a Blokus Grid to str and then back to Grid 
+    recovers the original information for a 2 player, 5x5 board with 0
+    pieces placed.
+    """
     bk = Blokus(2, 5, {(0, 0), (4, 4)})
     grid = bk.grid
     s = """
@@ -93,6 +120,11 @@ def test_grid_2() -> None:
     assert grid == string_to_grid(grid_to_string(grid))
 
 def test_grid_3() -> None:
+    """
+    Tests that converting a Blokus Grid to str and then back to Grid 
+    recovers the original information for a 2 player, 8x8 board with 6
+    pieces placed.
+    """
     bk = Blokus(2, 8, {(3, 3), (4, 4)})
     t = Piece(bk.shapes[ShapeKind.T])
     t.set_anchor((2, 3))
@@ -138,6 +170,11 @@ def test_grid_3() -> None:
     assert grid == string_to_grid(grid_to_string(grid))
 
 def test_grid_4() -> None:
+    """
+    Tests that converting a Blokus Grid to str and then back to Grid 
+    recovers the original information for a 2 player, 5x5 board with 2
+    pieces placed.
+    """
     bk = Blokus(2, 5, {(4, 0), (0, 4)})
     five_1 = Piece(bk.shapes[ShapeKind.FIVE])
     five_1.set_anchor((2, 0))
@@ -162,6 +199,11 @@ def test_grid_4() -> None:
     assert grid == string_to_grid(grid_to_string(grid))
 
 def test_grid_5() -> None:
+    """
+    Tests that converting a Blokus Grid to str and then back to Grid 
+    recovers the original information for a 1 player, 20x20 board with all 21
+    pieces placed.
+    """
     bk = Blokus(1, 20, {(0, 0)})
         
     l = Piece(bk.shapes[ShapeKind.L])
