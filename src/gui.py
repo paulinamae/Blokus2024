@@ -98,7 +98,7 @@ pygame.display.set_caption("Blokus")
 
 board: Blokus = Blokus(players, SCREEN_SIZE, start_positions)
 
-piece_colors: list[Color] = [(135, 81, 176), (156, 36, 54), (56, 177, 181)]
+piece_colors: list[Color] = [(135, 81, 176), (156, 36, 54), (56, 177, 181), (57, 135, 65)]
 player_colors: dict[int, Color] = {}
 for i in range(board.num_players):
     player_colors[i + 1] = piece_colors.pop(0)
